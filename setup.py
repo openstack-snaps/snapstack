@@ -13,7 +13,7 @@ SETUP = {
     'version': "0.0.1",
     'author': "Pete Vander Giessen",
     'author_email': "petevg@canonical.com",
-    'description': "Openstack Snap CI Harness [Prototype]"
+    'description': "Openstack Snap CI Harness [Prototype]",
     'url': "https://github.com/petevg/snapstack",
     'license': "Apache 2 License",
     'long_description': open('README.md').read(),

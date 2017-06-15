@@ -20,16 +20,20 @@ class Runner:
     '''
 
     DEFAULT_BASE = [
-        {'name': 'rabbitmq', location='{snapstack}', tests=['rabbitmq.sh']},
-        {'name': 'database', location='{snapstack}', tests=['database.sh']},
-        {'name': 'keystone', location='{snapstack}', tests=['keystone.sh']},
-        {'name': 'nova', location='{snapstack}', tests=['nova.sh']},
-        {'name': 'neutron', location='{snapstack}', tests=['neutron.sh']},
-        {'name': 'glance', location='{snapstack}', tests=['glance.sh']},
-        {'name': 'nova-hypervisor', location='{snapstack}',
-         tests=['nova-hypervisor.sh']},
-        {'name': 'neutron-ext-net', location='{snapstack}',
-         tests=['neutron-ext-net.sh']},]
+        {'name': 'rabbitmq', 'location': '{snapstack}',
+         'tests': ['rabbitmq.sh']},
+        {'name': 'database', 'location': '{snapstack}',
+         'tests': ['database.sh']},
+        {'name': 'keystone', 'location': '{snapstack}',
+         'tests': ['keystone.sh']},
+        {'name': 'nova', 'location': '{snapstack}', 'tests': ['nova.sh']},
+        {'name': 'neutron', 'location': '{snapstack}',
+         'tests': ['neutron.sh']},
+        {'name': 'glance', 'location': '{snapstack}', 'tests': ['glance.sh']},
+        {'name': 'nova-hypervisor', 'location': '{snapstack}',
+         'tests': ['nova-hypervisor.sh']},
+        {'name': 'neutron-ext-net', 'location': '{snapstack}',
+         'tests': ['neutron-ext-net.sh']},]
 
     LOCATION_VARS = {
         'snapstack': '../snapstack/scripts',  # TODO
@@ -38,7 +42,7 @@ class Runner:
         'name': None  # Filled in by _run
     }
 
-    def __init__(name, location='{local}', tests=None, base=None):
+    def __init__(self, name, location='{local}', tests=None, base=None):
         '''
         @param string name: Name of the snap being tested.
         @param string location: location of the test scripts for this snap.
@@ -71,7 +75,7 @@ class Runner:
             # TODO
             raise Exception('Github fetching not yet implemented')
 
-        return os.sep.join(location, test)
+        return os.sep.join([location, test])
 
 
     def _run(self, name, location, tests):
