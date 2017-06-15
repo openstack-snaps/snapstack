@@ -54,6 +54,7 @@ class Runner:
         'OS_AUTH_URL': 'http://localhost:35357',
         'OS_IDENTITY_API_VERSION': '3',
         'OS_IMAGE_API_VERSION': '2',
+        'BASE_DIR': '.'  # TODO: put this stuff someplace sensible
     }
 
     def __init__(self, name, location='{local}', tests=None, base=None):
