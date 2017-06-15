@@ -1,10 +1,11 @@
 import os
-
 import subprocess
 import unittest
 
+
 class InfraFailure(Exception):
     pass
+
 
 class TestFailure(Exception):
     pass
