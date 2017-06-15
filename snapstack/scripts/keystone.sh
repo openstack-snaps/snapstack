@@ -28,3 +28,9 @@ openstack user show admin || {
 openstack project show service || {
     openstack project create --domain default --description "Service Project" service
 }
+
+# Verify that everything has worked. TODO: flesh this out.
+sudo systemctl is-active snap.keystone.* && exit 0;
+# else
+echo "Keystone service failed. Check 'systemctl status snap.keystone.*' for details" && exit 1;
+
