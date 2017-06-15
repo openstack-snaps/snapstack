@@ -19,6 +19,8 @@ class Runner:
     '''
 
     DEFAULT_BASE = [
+        {'name': 'packages', 'location': '{snapstack}',
+         'tests': ['packages.sh']},  # TODO: make this cross-distro friendly
         {'name': 'rabbitmq', 'location': '{snapstack}',
          'tests': ['rabbitmq.sh']},
         {'name': 'database', 'location': '{snapstack}',
