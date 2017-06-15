@@ -34,7 +34,8 @@ class Runner:
         {'name': 'nova-hypervisor', 'location': '{snapstack}',
          'tests': ['nova-hypervisor.sh']},
         {'name': 'neutron-ext-net', 'location': '{snapstack}',
-         'tests': ['neutron-ext-net.sh']}]
+         'tests': ['neutron-ext-net.sh']}
+    ]
 
     LOCATION_VARS = {
         'snapstack': '../snapstack/scripts',  # TODO: just put default
@@ -42,6 +43,17 @@ class Runner:
         'github': 'https://github.com/openstack-snaps-span-',
         'local': 'tests',
         'name': None  # Filled in by _run
+    }
+
+    ADMIN_ENV = {
+        'OS_PROJECT_DOMAIN_NAME': 'default',
+        'OS_USER_DOMAIN_NAME': 'default',
+        'OS_PROJECT_NAME': 'admin',
+        'OS_USERNAME': 'admin',
+        'OS_PASSWORD': 'keystone',
+        'OS_AUTH_URL': 'http://localhost:35357',
+        'OS_IDENTITY_API_VERSION': '3',
+        'OS_IMAGE_API_VERSION': '2',
     }
 
     def __init__(self, name, location='{local}', tests=None, base=None):
@@ -91,9 +103,13 @@ class Runner:
         location_vars['name'] = name
         location = location.format(**location_vars)
 
+        env = dict(os.environ)
+        env.update(self.ADMIN_ENV)
+
         for test in tests:
             script = self._path(location, test)
-            if not subprocess.check_output([script]):
+            p = subprocess.run([script], env=env)
+            if p.returncode > 0:
                 raise TestFailure(
                     'Failed to run test "{script}" for "{name}"'.format(
                         script=script, name=name))

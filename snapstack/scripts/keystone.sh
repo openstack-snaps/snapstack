@@ -2,8 +2,6 @@
 
 set -ex
 
-source $BASE_DIR/admin-openrc
-
 snap list | grep -q keystone || {
     sudo snap install --edge --classic keystone
 }

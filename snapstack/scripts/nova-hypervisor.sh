@@ -2,8 +2,6 @@
 
 set -ex
 
-source $BASE_DIR/admin-openrc
-
 snap list | grep -q "^nova-hypervisor\s" || {
     sudo snap install --edge --classic nova-hypervisor
 }

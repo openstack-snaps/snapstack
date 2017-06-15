@@ -1,3 +1,4 @@
+import os
 import mock
 import unittest
 
@@ -21,10 +22,19 @@ class TestRunner(unittest.TestCase):
         # need to fake out tests for it:
         r = Runner('keystone')
 
+        faux_p = mock.Mock()
+        faux_p.returncode = 0
+
+        env = dict(os.environ)
+        env.update(Runner.ADMIN_ENV)
+
+        mock_subprocess.run.return_value = faux_p
+
         r.run()
 
-        mock_subprocess.check_output.assert_called_with(
-            ['snapstack/scripts/neutron-ext-net.sh'])
+        mock_subprocess.run.assert_called_with(
+            ['snapstack/scripts/neutron-ext-net.sh'],
+            env=env)
 
     @unittest.skip('This will setup snapstack in your local environment')
     def test_real_run(self):

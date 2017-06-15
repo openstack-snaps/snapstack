@@ -2,8 +2,6 @@
 
 set -ex
 
-source $BASE_DIR/admin-openrc
-
 sudo ovs-vsctl --may-exist add-br br-ex
 
 # Create bridge for local access to instances
