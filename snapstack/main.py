@@ -1,6 +1,5 @@
 import os
 import subprocess
-import unittest
 
 
 class InfraFailure(Exception):
@@ -33,10 +32,11 @@ class Runner:
         {'name': 'nova-hypervisor', 'location': '{snapstack}',
          'tests': ['nova-hypervisor.sh']},
         {'name': 'neutron-ext-net', 'location': '{snapstack}',
-         'tests': ['neutron-ext-net.sh']},]
+         'tests': ['neutron-ext-net.sh']}]
 
     LOCATION_VARS = {
-        'snapstack': '../snapstack/scripts',  # TODO
+        'snapstack': '../snapstack/scripts',  # TODO: just put default
+                                              # scripts in path
         'github': 'https://github.com/openstack-snaps-span-',
         'local': 'tests',
         'name': None  # Filled in by _run
@@ -56,11 +56,9 @@ class Runner:
         self._tests = tests
         self._base = self._validate_base(base or self.DEFAULT_BASE)
 
-
     def _validate_base(self, base):
         # TODO
         return base
-
 
     def _path(self, location, test):
         '''
@@ -76,7 +74,6 @@ class Runner:
             raise Exception('Github fetching not yet implemented')
 
         return os.sep.join([location, test])
-
 
     def _run(self, name, location, tests):
         '''
@@ -94,23 +91,22 @@ class Runner:
 
         for test in tests:
             script = self._path(location, test)
-            if not subprocess.check_output(script):
+            if not subprocess.check_output([script]):
                 raise TestFailure(
                     'Failed to run test "{script}" for "{name}"'.format(
                         script=script, name=name))
 
-
     def run(self):
         for spec in self._base:
             try:
-                self._run(*spec)
+                self._run(**spec)
             except TestFailure as e:
                 # Transform TestFailure here into an InfraFailure, to
                 # help devs figure out just why the test failed.
-                if not self._name in self._base:
+                if self._name not in self._base:
                     raise InfraFailure('Snapstack setup failed: {}'.format(e))
 
-        if not self._name in self._base:
+        if self._name not in self._base:
             # Skip running tests separately for something that is
             # already smoke tested in the base.
             self._run(self._name, self._location, self._tests)
