@@ -19,22 +19,19 @@ class Runner:
     '''
 
     DEFAULT_BASE = [
-        {'name': 'packages', 'location': '{snapstack}',
-         'tests': ['packages.sh']},  # TODO: make this cross-distro friendly
-        {'name': 'rabbitmq', 'location': '{snapstack}',
-         'tests': ['rabbitmq.sh']},
-        {'name': 'database', 'location': '{snapstack}',
-         'tests': ['database.sh']},
-        {'name': 'keystone', 'location': '{snapstack}',
+        # Setup
+        {'location': '{snapstack}', 'tests': ['packages.sh', 'rabbitmq.sh',
+                                              'database.sh']},
+        {'snap': 'keystone', 'location': '{snapstack}',
          'tests': ['keystone.sh']},
-        {'name': 'nova', 'location': '{snapstack}', 'tests': ['nova.sh']},
-        {'name': 'neutron', 'location': '{snapstack}',
+        {'snap': 'nova', 'location': '{snapstack}', 'tests': ['nova.sh']},
+        {'snap': 'neutron', 'location': '{snapstack}',
          'tests': ['neutron.sh']},
-        {'name': 'glance', 'location': '{snapstack}', 'tests': ['glance.sh']},
-        {'name': 'nova-hypervisor', 'location': '{snapstack}',
+        {'snap': 'glance', 'location': '{snapstack}', 'tests': ['glance.sh']},
+        {'snap': 'nova-hypervisor', 'location': '{snapstack}',
          'tests': ['nova-hypervisor.sh']},
-        {'name': 'neutron-ext-net', 'location': '{snapstack}',
-         'tests': ['neutron-ext-net.sh']}
+        # Post install scripts
+        {'location': '{snapstack}', 'tests': ['neutron-ext-net.sh']}
     ]
 
     LOCATION_VARS = {
@@ -42,7 +39,7 @@ class Runner:
                                               # scripts in path
         'github': 'https://github.com/openstack-snaps-span-',
         'local': 'tests',
-        'name': None  # Filled in by _run
+        'snap': None  # Filled in by _run
     }
 
     ADMIN_ENV = {
@@ -57,7 +54,7 @@ class Runner:
         'BASE_DIR': '.'  # TODO: put this stuff someplace sensible
     }
 
-    def __init__(self, name, location='{local}', tests=None, base=None):
+    def __init__(self, snap, location='{local}', tests=None, base=None):
         '''
         @param string name: Name of the snap being tested.
         @param string location: location of the test scripts for this snap.
@@ -66,7 +63,7 @@ class Runner:
           environment.
 
         '''
-        self._name = name
+        self._snap = snap
         self._location = location
         self._tests = tests
         self._base = self._validate_base(base or self.DEFAULT_BASE)
@@ -77,7 +74,7 @@ class Runner:
 
     def _path(self, location, test):
         '''
-        Given a 'location' and a script name, return a path that
+        Given a 'location' and a test name, return a path that
         subprocess can use to execute the script.
 
         If the location is a remote location, fetch the script to a
@@ -90,7 +87,7 @@ class Runner:
 
         return os.sep.join([location, test])
 
-    def _run(self, name, location, tests):
+    def _run(self, location, tests, snap=None):
         '''
         Given a snap name, 'location' designator, and list of tests, run
         the tests for that snap.
@@ -101,7 +98,7 @@ class Runner:
         tests = tests or []  # TODO: just fail if no tests?
 
         location_vars = dict(self.LOCATION_VARS)  # Copy
-        location_vars['name'] = name
+        location_vars['snap'] = snap
         location = location.format(**location_vars)
 
         env = dict(os.environ)
@@ -112,20 +109,51 @@ class Runner:
             p = subprocess.run([script], env=env)
             if p.returncode > 0:
                 raise TestFailure(
-                    'Failed to run test "{script}" for "{name}"'.format(
-                        script=script, name=name))
+                    'Failed to run test "{script}'.format(script=script))
 
     def run(self):
+        '''
+        Setup a snapstack on this machine, and run some basic smoke tests
+        on it.
+
+        '''
         for spec in self._base:
             try:
                 self._run(**spec)
             except TestFailure as e:
                 # Transform TestFailure here into an InfraFailure, to
                 # help devs figure out just why the test failed.
-                if self._name not in self._base:
+                if self._snap != spec.get('snap'):
                     raise InfraFailure('Snapstack setup failed: {}'.format(e))
 
-        if self._name not in self._base:
+        if self._snap not in [spec.get('snap') for spec in self._base]:
             # Skip running tests separately for something that is
             # already smoke tested in the base.
-            self._run(self._name, self._location, self._tests)
+            self._run(self._location, self._tests, self._snap)
+
+    def cleanup(self):
+        '''
+        Tear snapstack down.
+
+        '''
+        # Uninstall snaps
+        for spec in self._base:
+            if not spec.get('snap'):
+                continue
+            subprocess.run(['sudo', 'snap', 'remove', spec['snap']])
+
+        # Clean up SQL (TODO: make this prettier)
+        SQL_CLEANUP = """\
+sudo mysql -u root << EOF
+DROP DATABASE keystone;
+DROP DATABASE nova;
+DROP DATABASE nova_api;
+DROP DATABASE nova_cell0;
+DROP DATABASE neutron;
+DROP DATABASE glance;
+DROP DATABASE cinder;
+EOF"""
+        subprocess.run([SQL_CLEANUP], shell=True)
+
+        subprocess.run(
+            ['sudo', 'rabbitmqctl', 'delete_user', 'openstack'])
