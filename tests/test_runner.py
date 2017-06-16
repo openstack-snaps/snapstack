@@ -36,11 +36,18 @@ class TestRunner(unittest.TestCase):
             ['snapstack/scripts/neutron-ext-net.sh'],
             env=env)
 
-    @unittest.skip('This will setup snapstack in your local environment')
+        r.cleanup()
+        mock_subprocess.run.assert_called_with(
+            ['sudo', 'rabbitmqctl', 'delete_user', 'openstack'])
+
+    # @unittest.skip('Comment this out to run a real snapstack')
     def test_real_run(self):
         '''
         Comment out the skip above to setup snapstack on this machine.
 
         '''
         r = Runner('keystone')
-        r.run()
+        try:
+            r.run()
+        finally:
+            r.cleanup()
