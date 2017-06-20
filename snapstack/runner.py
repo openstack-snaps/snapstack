@@ -1,61 +1,24 @@
+'''
+Test runner prototype for snap CI.
+
+'''
+
 import logging
 import os
 import subprocess
-import sys
-
 from textwrap import dedent
 
-
-class InfraFailure(Exception):
-    pass
-
-
-class TestFailure(Exception):
-    pass
+from snapstack import config
+from snapstack.errors import InfraFailure, TestFailure
 
 
 class Runner:
     '''
-    The heart of snapstack: tools to build an openstack environemnt
+    This is the heart of snapstack: tools to build an openstack environemnt
     out of a "base" of snaps, deploy a new snap against it, then run a
     set of integration tests.
 
     '''
-
-    DEFAULT_BASE = [
-        # Setup
-        {'location': '{snapstack}', 'tests': ['packages.sh', 'rabbitmq.sh',
-                                              'database.sh']},
-        {'snap': 'keystone', 'location': '{snapstack}',
-         'tests': ['keystone.sh']},
-        {'snap': 'nova', 'location': '{snapstack}', 'tests': ['nova.sh']},
-        {'snap': 'neutron', 'location': '{snapstack}',
-         'tests': ['neutron.sh']},
-        {'snap': 'glance', 'location': '{snapstack}', 'tests': ['glance.sh']},
-        {'snap': 'nova-hypervisor', 'location': '{snapstack}',
-         'tests': ['nova-hypervisor.sh']},
-        # Post install scripts
-        {'location': '{snapstack}', 'tests': ['neutron-ext-net.sh']}
-    ]
-
-    LOCATION_VARS = {
-        'snapstack': '',  # Just exists in the PATH.
-        'github': 'https://github.com/openstack-snaps-span-',
-        'local': 'tests/',
-        'snap': None  # Filled in by _run
-    }
-
-    ADMIN_ENV = {
-        'OS_PROJECT_DOMAIN_NAME': 'default',
-        'OS_USER_DOMAIN_NAME': 'default',
-        'OS_PROJECT_NAME': 'admin',
-        'OS_USERNAME': 'admin',
-        'OS_PASSWORD': 'keystone',
-        'OS_AUTH_URL': 'http://localhost:35357',
-        'OS_IDENTITY_API_VERSION': '3',
-        'OS_IMAGE_API_VERSION': '2',
-        'BASE_DIR': os.path.dirname(sys.modules[__name__].__file__)
-    }
 
     def __init__(self, snap, location='{local}', tests=None, base=None):
         '''
@@ -70,7 +33,7 @@ class Runner:
         self._snap = snap
         self._location = location
         self._tests = tests
-        self._base = self._validate_base(base or self.DEFAULT_BASE)
+        self._base = self._validate_base(base or config.DEFAULT_BASE)
 
     def _validate_base(self, base):
         '''
@@ -122,12 +85,12 @@ class Runner:
         if not tests:
             self.log.warning("No tests for {}{}".format(location, snap))
 
-        location_vars = dict(self.LOCATION_VARS)  # Copy
+        location_vars = dict(config.LOCATION_VARS)  # Copy
         location_vars['snap'] = snap
         location = location.format(**location_vars)
 
         env = dict(os.environ)
-        env.update(self.ADMIN_ENV)
+        env.update(config.ADMIN_ENV)
 
         for test in tests:
             script = self._path(location, test)

@@ -1,1 +1,2 @@
-from .main import Runner  # noqa TODO: fix up location of everything
+from snapstack.runner import Runner  # noqa
+from snapstack.errors import TestFailure, InfraFailure  # noqa

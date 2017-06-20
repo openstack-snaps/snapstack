@@ -2,15 +2,16 @@ import os
 import mock
 import unittest
 
-from snapstack import Runner
-from snapstack.main import InfraFailure
+from snapstack import Runner, InfraFailure, config
 
 
 class TestRunner(unittest.TestCase):
 
-    @mock.patch('snapstack.main.subprocess')
+    @mock.patch('snapstack.runner.subprocess')
     def test_faux_run(self, mock_subprocess):
         '''
+        _test_faux_run
+
         Test to verify that it looks like we are going to run all the
         right scripts, without actually setting up a snapstack.
 
@@ -23,7 +24,7 @@ class TestRunner(unittest.TestCase):
         faux_p.returncode = 0
 
         env = dict(os.environ)
-        env.update(Runner.ADMIN_ENV)
+        env.update(config.ADMIN_ENV)
 
         mock_subprocess.run.return_value = faux_p
 
@@ -51,6 +52,8 @@ class TestRunner(unittest.TestCase):
         'Enabling this test will install software and tools on your machine.')
     def test_real_run(self):
         '''
+        _test_real_run
+
         Comment out the skip above to setup snapstack on this machine.
 
         '''
