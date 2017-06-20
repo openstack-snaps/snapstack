@@ -36,8 +36,9 @@ class TestRunner(unittest.TestCase):
         mock_subprocess.run.assert_called_with(
             ['sudo', 'rabbitmqctl', 'delete_user', 'openstack'])
 
-    # TODO: convert to skipif statement, and depend on env variable.
-    @unittest.skip('Comment this out to run a real snapstack')
+    @unittest.skipUnless(
+        os.environ.get('SNAPSTACK_TEST_INSTALL'),
+        'Enabling this test will install software and tools on your machine.')
     def test_real_run(self):
         '''
         Comment out the skip above to setup snapstack on this machine.
