@@ -7,10 +7,6 @@ from snapstack import Runner
 
 class TestRunner(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        Runner.LOCATION_VARS['snapstack'] = 'snapstack/scripts'
-
     @mock.patch('snapstack.main.subprocess')
     def test_faux_run(self, mock_subprocess):
         '''
@@ -33,7 +29,7 @@ class TestRunner(unittest.TestCase):
         r.run()
 
         mock_subprocess.run.assert_called_with(
-            ['snapstack/scripts/neutron-ext-net.sh'],
+            ['neutron-ext-net.sh'],
             env=env)
 
         r.cleanup()

@@ -1,5 +1,6 @@
 import os
 import subprocess
+import sys
 
 
 class InfraFailure(Exception):
@@ -35,10 +36,9 @@ class Runner:
     ]
 
     LOCATION_VARS = {
-        'snapstack': '../snapstack/scripts',  # TODO: just put default
-                                              # scripts in path
+        'snapstack': '',  # Just exists in the PATH.
         'github': 'https://github.com/openstack-snaps-span-',
-        'local': 'tests',
+        'local': 'tests/',
         'snap': None  # Filled in by _run
     }
 
@@ -51,7 +51,10 @@ class Runner:
         'OS_AUTH_URL': 'http://localhost:35357',
         'OS_IDENTITY_API_VERSION': '3',
         'OS_IMAGE_API_VERSION': '2',
-        'BASE_DIR': '.'  # TODO: put this stuff someplace sensible
+        # Config files and other auxillary stuff for the default
+        # scripts live in snapstack for now; TODO: need to maybe put
+        # them elsewhere.
+        'BASE_DIR': os.path.dirname(sys.modules[__name__].__file__)
     }
 
     def __init__(self, snap, location='{local}', tests=None, base=None):
@@ -85,7 +88,7 @@ class Runner:
             # TODO
             raise Exception('Github fetching not yet implemented')
 
-        return os.sep.join([location, test])
+        return ''.join([location, test])
 
     def _run(self, location, tests, snap=None):
         '''
