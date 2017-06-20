@@ -3,6 +3,7 @@ import mock
 import unittest
 
 from snapstack import Runner
+from snapstack.main import InfraFailure
 
 
 class TestRunner(unittest.TestCase):
@@ -35,6 +36,15 @@ class TestRunner(unittest.TestCase):
         r.cleanup()
         mock_subprocess.run.assert_called_with(
             ['sudo', 'rabbitmqctl', 'delete_user', 'openstack'])
+
+    def test_validate_base(self):
+        r = Runner('keystone')
+
+        invalid_base01 = [{'foo': 'bar'}]
+        valid_base01 = [{'location': '{github}', 'snap': 'foo', 'tests': []}]
+
+        self.assertRaises(InfraFailure, r._validate_base, invalid_base01)
+        self.assertTrue(r._validate_base(valid_base01))
 
     @unittest.skipUnless(
         os.environ.get('SNAPSTACK_TEST_INSTALL'),

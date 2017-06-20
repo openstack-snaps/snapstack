@@ -1,6 +1,9 @@
+import logging
 import os
 import subprocess
 import sys
+
+from textwrap import dedent
 
 
 class InfraFailure(Exception):
@@ -51,9 +54,6 @@ class Runner:
         'OS_AUTH_URL': 'http://localhost:35357',
         'OS_IDENTITY_API_VERSION': '3',
         'OS_IMAGE_API_VERSION': '2',
-        # Config files and other auxillary stuff for the default
-        # scripts live in snapstack for now; TODO: need to maybe put
-        # them elsewhere.
         'BASE_DIR': os.path.dirname(sys.modules[__name__].__file__)
     }
 
@@ -66,13 +66,31 @@ class Runner:
           environment.
 
         '''
+        self.log = logging.getLogger()
         self._snap = snap
         self._location = location
         self._tests = tests
         self._base = self._validate_base(base or self.DEFAULT_BASE)
 
     def _validate_base(self, base):
-        # TODO
+        '''
+        Do some basic validation of the specs for a base suite of tests.
+
+        This could be expanded to check for invalid magic strings in
+        the location, etc.
+
+        '''
+        for spec in base:
+            if 'location' not in spec:
+                raise InfraFailure(
+                    "Invalid spec. Missing location for {}".format(spec))
+            if 'tests' not in spec:
+                raise InfraFailure(
+                    "Invalid spec. Missing tests for {}".format(spec))
+            if type(spec['tests']) != list:
+                raise InfraFailure(
+                    "Invalid spec. Tests must be a list. {}".format(spec))
+
         return base
 
     def _path(self, location, test):
@@ -80,12 +98,14 @@ class Runner:
         Given a 'location' and a test name, return a path that
         subprocess can use to execute the script.
 
-        If the location is a remote location, fetch the script to a
-        cache first. (TODO: or execute off of github?)
+        If the location is a remote location, fetch the script first.
 
         '''
         if location.startswith('http') or location.startswith('ssh'):
-            # TODO
+            # TODO Fetch stuff from github when appropriate
+            # TODO Need to figure out what to do with config files
+            # when we do -- they currently live in
+            # site-packages/snapstack/etc
             raise Exception('Github fetching not yet implemented')
 
         return ''.join([location, test])
@@ -98,7 +118,9 @@ class Runner:
         (This may be the main snap for this runner, or a snap in the 'base')
 
         '''
-        tests = tests or []  # TODO: just fail if no tests?
+        tests = tests or []
+        if not tests:
+            self.log.warning("No tests for {}{}".format(location, snap))
 
         location_vars = dict(self.LOCATION_VARS)  # Copy
         location_vars['snap'] = snap
@@ -145,17 +167,16 @@ class Runner:
                 continue
             subprocess.run(['sudo', 'snap', 'remove', spec['snap']])
 
-        # Clean up SQL (TODO: make this prettier)
-        SQL_CLEANUP = """\
-sudo mysql -u root << EOF
-DROP DATABASE keystone;
-DROP DATABASE nova;
-DROP DATABASE nova_api;
-DROP DATABASE nova_cell0;
-DROP DATABASE neutron;
-DROP DATABASE glance;
-DROP DATABASE cinder;
-EOF"""
+        SQL_CLEANUP = dedent("""\
+            sudo mysql -u root << EOF
+            DROP DATABASE keystone;
+            DROP DATABASE nova;
+            DROP DATABASE nova_api;
+            DROP DATABASE nova_cell0;
+            DROP DATABASE neutron;
+            DROP DATABASE glance;
+            DROP DATABASE cinder;
+            EOF""")
         subprocess.run([SQL_CLEANUP], shell=True)
 
         subprocess.run(
