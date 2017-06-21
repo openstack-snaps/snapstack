@@ -2,10 +2,6 @@
 
 set -ex
 
-snap list | grep -q neutron || {
-    sudo snap install --edge --classic neutron
-}
-
 openstack user show neutron || {
     openstack user create --domain default --password neutron neutron
     openstack role add --project service --user neutron admin

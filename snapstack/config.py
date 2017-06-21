@@ -41,3 +41,9 @@ ADMIN_ENV = {
     'OS_IMAGE_API_VERSION': '2',
     'BASE_DIR': os.path.dirname(sys.modules[__name__].__file__)
 }
+
+INSTALL_SNAP = """\
+snap list | grep -q "^{snap}\s" || {{
+    sudo snap install --edge --classic {snap}
+}}
+"""

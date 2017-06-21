@@ -2,10 +2,6 @@
 
 set -ex
 
-snap list | grep -q glance || {
-    sudo snap install --edge --classic glance
-}
-
 while sudo [ ! -d /var/snap/glance/common/etc/glance/ ]; do sleep 0.1; done;
 sudo cp -r $BASE_DIR/etc/glance/* /var/snap/glance/common/etc/glance/
 

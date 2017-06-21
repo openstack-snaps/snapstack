@@ -1,5 +1,20 @@
 '''
-Test runner prototype for snap CI.
+Harness for doing basic CI on a snap. To use this library, you should:
+
+1) Import it into the tests for your snap.
+
+2) Create an instance of the Runner class, and invoke its run and
+cleanup routine, passing in your snap name, and pointers to shell
+scripts that will install the snap, test it, and clean it up.
+
+The runner is meant to be a fairly lighweight Python wrapper around
+your shell scripts. It also serves as a lighweight wrapper around a
+set of scripts that will setup a "base" openstack via a standard set
+of snaps. You can define your own base if necessary.
+
+The overarching purpose is to test the snap, rather than to
+extensively test the underlying surface, so basic tests will usually
+suffice.
 
 '''
 
@@ -16,7 +31,7 @@ class Runner:
     '''
     This is the heart of snapstack: tools to build an openstack environemnt
     out of a "base" of snaps, deploy a new snap against it, then run a
-    set of integration tests.
+    set of lightweight integration tests.
 
     '''
 
@@ -91,6 +106,17 @@ class Runner:
 
         env = dict(os.environ)
         env.update(config.ADMIN_ENV)
+
+        if snap:
+            # Run INSTALL_SNAP script first, which will install the
+            # snap, of be a noop if the snap is already installed
+            # (allows you to override the default install process).
+            p = subprocess.run(
+                [config.INSTALL_SNAP.format(snap=snap)],
+                shell=True
+            )
+            if p.returncode > 0:
+                raise InfraFailure("Failed to install snap {}".format(snap))
 
         for test in tests:
             script = self._path(location, test)

@@ -2,10 +2,6 @@
 
 set -ex
 
-snap list | grep -q "^nova\s" || {
-    sudo snap install --edge --classic nova
-}
-
 openstack user show nova || {
     openstack user create --domain default --password nova nova
     openstack role add --project service --user nova admin

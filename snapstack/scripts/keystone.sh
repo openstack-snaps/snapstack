@@ -2,10 +2,6 @@
 
 set -ex
 
-snap list | grep -q keystone || {
-    sudo snap install --edge --classic keystone
-}
-
 while sudo [ ! -d /var/snap/keystone/common/etc/keystone/ ]; do sleep 0.1; done;
 sudo cp -r $BASE_DIR/etc/keystone/* /var/snap/keystone/common/etc/keystone/
 

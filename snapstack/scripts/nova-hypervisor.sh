@@ -2,10 +2,6 @@
 
 set -ex
 
-snap list | grep -q "^nova-hypervisor\s" || {
-    sudo snap install --edge --classic nova-hypervisor
-}
-
 while sudo [ ! -d /var/snap/nova-hypervisor/common/etc/neutron/ ]; do sleep 0.1; done;
 sudo cp -r $BASE_DIR/etc/nova-hypervisor/neutron/* /var/snap/nova-hypervisor/common/etc/neutron/
 while sudo [ ! -d /var/snap/nova-hypervisor/common/etc/nova/ ]; do sleep 0.1; done;
