@@ -29,7 +29,7 @@ DEFAULT_BASE = [
          'etc/snap-glance/glance/glance.conf.d/database.conf',
          'etc/snap-glance/glance/glance.conf.d/keystone.conf']},
     {'location': '{snapstack}', 'tests': ['packages.sh']},
-    # Install snaps
+    # Install
     {'location': '{snap-test}', 'tests': [
         'scripts/rabbitmq.sh', 'scripts/database.sh']},
     {'snap': 'keystone', 'location': '{snap-test}',
@@ -41,7 +41,7 @@ DEFAULT_BASE = [
         'scripts/glance.sh']},
     {'snap': 'nova-hypervisor', 'location': '{snap-test}',
      'tests': ['scripts/nova-hypervisor.sh']},
-    # Post install scripts
+    # Post install
     {'location': '{snap-test}', 'tests': ['scripts/neutron-ext-net.sh']}
 ]
 
@@ -50,7 +50,6 @@ LOCATION_VARS = {
     'snap-test': (
         'https://raw.githubusercontent.com/openstack-snaps/snap-test/master/'
     ),
-    'local': 'tests/',
     'snap': None  # Filled in by _run
 }
 

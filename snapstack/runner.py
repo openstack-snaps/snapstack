@@ -38,11 +38,13 @@ class Runner:
 
     '''
 
-    def __init__(self, snap, location='{local}', tests=None, base=None):
+    def __init__(self, snap, location='{local}', tests=None, files=None,
+                 base=None):
         '''
         @param string name: Name of the snap being tested.
         @param string location: location of the test scripts for this snap.
         @param list tests: List of scripts to execute in order.
+        @param list files: List of config files that we may need to reference.
         @param list base: collection of snap tests to run to setup a "base"
           environment.
 
@@ -51,6 +53,7 @@ class Runner:
         self._snap = snap
         self._location = location
         self._tests = tests
+        self._files = files
         self._base = self._validate_base(base or config.DEFAULT_BASE)
         self._tempdir = None
 
@@ -93,29 +96,24 @@ class Runner:
 
         return base
 
-    def _path(self, location, file_):
-        '''
-        TODO: udpate docs (and rename stuff to reflect current usage and flow)
+    def _fetch(self, parent, rel_path):
+        '''Given a parent location and a relative path to a file, return a
+        local path to the file.
 
-        Given a 'location' and a file_ name, return a path that
-        subprocess can use to execute the script.
-
-        If the location is a remote location, fetch the script first.
+        If the parent location is a url, download the file first.
 
         '''
-        path_ = ''.join([location, file_])
+        path_ = ''.join([parent, rel_path])
         if path_.startswith('https://'):
-            # TODO: make this much more robust
+            # Download remote file and write to disk.
             remote = requests.get(path_)
             remote.raise_for_status()
-            new_path = os.sep.join([self.tempdir, file_])
+            new_path = os.sep.join([self.tempdir, rel_path])
 
-            # Make sure the parent directory exists
-            parent = os.path.dirname(new_path)
-            if not os.path.exists(parent):
-                os.makedirs(parent)
+            d = os.path.dirname(new_path)
+            if not os.path.exists(d):
+                os.makedirs(d)
 
-            # Write contents to the file
             with open(new_path, 'w') as f:
                 f.write(remote.text)
             os.chmod(new_path, os.stat(new_path).st_mode | stat.S_IEXEC)
@@ -125,10 +123,10 @@ class Runner:
 
     def _run(self, location, tests=None, snap=None, files=None):
         '''
-        Given a snap name, 'location' designator, and list of tests, run
-        the tests for that snap.
+        Run a set of tests, specified by a parent location, a list of
+        test scripts to execute, and possibly a snap to install.
 
-        (This may be the main snap for this runner, or a snap in the 'base')
+        Alternately, simply download a set of config files.
 
         '''
         tests = tests or []
@@ -142,9 +140,8 @@ class Runner:
         env.update({'BASE_DIR': self.tempdir})
 
         if snap:
-            # Run INSTALL_SNAP script first, which will install the
-            # snap, of be a noop if the snap is already installed
-            # (allows you to override the default install process).
+            # Install the snap. INSTALL_SNAP will be a noop if the
+            # snap is already intsalled.
             p = subprocess.run(
                 [config.INSTALL_SNAP.format(snap=snap, classic='')],
                 shell=True
@@ -162,10 +159,10 @@ class Runner:
                         "Failed to install snap {}".format(snap))
 
         for f in files:
-            self._path(location, f)
+            self._fetch(location, f)
 
         for test in tests:
-            script = self._path(location, test)
+            script = self._fetch(location, test)
             p = subprocess.run([script], env=env)
             if p.returncode > 0:
                 raise TestFailure(
@@ -189,7 +186,7 @@ class Runner:
         if self._snap not in [spec.get('snap') for spec in self._base]:
             # Skip running tests separately for something that is
             # already smoke tested in the base.
-            self._run(self._location, self._tests, self._snap)
+            self._run(self._location, self._tests, self._snap, self._files)
 
     def cleanup(self):
         '''
