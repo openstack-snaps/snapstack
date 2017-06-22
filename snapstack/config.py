@@ -19,7 +19,15 @@ DEFAULT_BASE = [
          'etc/snap-neutron/neutron/neutron.conf.d/database.conf',
          'etc/snap-neutron/neutron/neutron.conf.d/nova.conf',
          'etc/snap-neutron/neutron/neutron.conf.d/keystone.conf',
-         'etc/snap-keystone/keystone/keystone.conf.d/database.conf']},
+         'etc/snap-keystone/keystone/keystone.conf.d/database.conf',
+         'etc/snap-nova/nova/nova.conf.d/nova-placement.conf',
+         'etc/snap-nova/nova/nova.conf.d/scheduler.conf',
+         'etc/snap-nova/nova/nova.conf.d/database.conf',
+         'etc/snap-nova/nova/nova.conf.d/keystone.conf',
+         'etc/snap-nova/nova/nova.conf.d/rabbitmq.conf',
+         'etc/snap-nova/nova/nova.conf.d/neutron.conf',
+         'etc/snap-glance/glance/glance.conf.d/database.conf',
+         'etc/snap-glance/glance/glance.conf.d/keystone.conf']},
     {'location': '{snapstack}', 'tests': ['packages.sh']},
     # Install snaps
     {'location': '{snap-test}', 'tests': [
@@ -48,6 +56,6 @@ LOCATION_VARS = {
 
 INSTALL_SNAP = """\
 snap list | grep -q "^{snap}\s" || {{
-    sudo snap install --edge --classic {snap}
+    sudo snap install --edge {classic}{snap}
 }}
 """

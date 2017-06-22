@@ -83,7 +83,7 @@ class Runner:
                     "Invalid spec. Missing location for {}".format(spec))
             if 'tests' not in spec and 'files' not in spec:
                 raise InfraFailure(
-                    "Invalid spec. Missing tests or files for {}".format(spec))
+                    "Invalid spec. Missing tests or files in {}".format(spec))
             if 'tests' in spec and type(spec['tests']) != list:
                 raise InfraFailure(
                     "Invalid spec. Tests must be a list. {}".format(spec))
@@ -140,6 +140,26 @@ class Runner:
 
         env = dict(os.environ)
         env.update({'BASE_DIR': self.tempdir})
+
+        if snap:
+            # Run INSTALL_SNAP script first, which will install the
+            # snap, of be a noop if the snap is already installed
+            # (allows you to override the default install process).
+            p = subprocess.run(
+                [config.INSTALL_SNAP.format(snap=snap, classic='')],
+                shell=True
+            )
+            if p.returncode > 0:
+                # Temp HACK: try to install in classic mode if
+                # standard mode doesn't work.'
+                p = subprocess.run(
+                    [config.INSTALL_SNAP.format(
+                        snap=snap,
+                        classic='--classic ')],
+                    shell=True)
+                if p.returncode > 0:
+                    raise InfraFailure(
+                        "Failed to install snap {}".format(snap))
 
         for f in files:
             self._path(location, f)
