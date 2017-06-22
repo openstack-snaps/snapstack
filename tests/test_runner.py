@@ -2,7 +2,7 @@ import os
 import mock
 import unittest
 
-from snapstack import Runner, InfraFailure, config
+from snapstack import Runner, InfraFailure
 
 
 class TestRunner(unittest.TestCase):
@@ -24,14 +24,17 @@ class TestRunner(unittest.TestCase):
         faux_p.returncode = 0
 
         env = dict(os.environ)
-        env.update(config.ADMIN_ENV)
+        env.update({'BASE_DIR': r.tempdir})
 
         mock_subprocess.run.return_value = faux_p
 
         r.run()
 
+        self.assertTrue(
+            os.path.exists(os.sep.join([r.tempdir, 'admin-openrc'])))
+
         mock_subprocess.run.assert_called_with(
-            [os.sep.join([r.tempdir, 'neutron-ext-net.sh'])],
+            [os.sep.join([r.tempdir, 'scripts/neutron-ext-net.sh'])],
             env=env)
 
         r.cleanup()
