@@ -9,36 +9,31 @@ import sys
 
 DEFAULT_BASE = [
     # Setup
-    {'location': '{snapstack}', 'tests': ['packages.sh', 'rabbitmq.sh',
-                                          'database.sh']},
-    {'snap': 'keystone', 'location': '{snapstack}',
+    {'location': '{snapstack}', 'tests': ['packages.sh']},
+    {'location': '{snap-test}', 'tests': ['rabbitmq.sh', 'database.sh']},
+    {'snap': 'keystone', 'location': '{snap-test}',
      'tests': ['keystone.sh']},
-    {'snap': 'nova', 'location': '{snapstack}', 'tests': ['nova.sh']},
-    {'snap': 'neutron', 'location': '{snapstack}',
+    {'snap': 'nova', 'location': '{snap-test}', 'tests': ['nova.sh']},
+    {'snap': 'neutron', 'location': '{snap-test}',
      'tests': ['neutron.sh']},
-    {'snap': 'glance', 'location': '{snapstack}', 'tests': ['glance.sh']},
-    {'snap': 'nova-hypervisor', 'location': '{snapstack}',
+    {'snap': 'glance', 'location': '{snap-test}', 'tests': ['glance.sh']},
+    {'snap': 'nova-hypervisor', 'location': '{snap-test}',
      'tests': ['nova-hypervisor.sh']},
     # Post install scripts
-    {'location': '{snapstack}', 'tests': ['neutron-ext-net.sh']}
+    {'location': '{snap-test}', 'tests': ['neutron-ext-net.sh']}
 ]
 
 LOCATION_VARS = {
     'snapstack': '',  # Just exists in the PATH.
-    'github': 'https://github.com/openstack-snaps-span-',
+    'snap-test': (
+        'https://raw.githubusercontent.com/openstack-snaps/snap-test/master/'
+        'scripts/'
+    ),
     'local': 'tests/',
     'snap': None  # Filled in by _run
 }
 
 ADMIN_ENV = {
-    'OS_PROJECT_DOMAIN_NAME': 'default',
-    'OS_USER_DOMAIN_NAME': 'default',
-    'OS_PROJECT_NAME': 'admin',
-    'OS_USERNAME': 'admin',
-    'OS_PASSWORD': 'keystone',
-    'OS_AUTH_URL': 'http://localhost:35357',
-    'OS_IDENTITY_API_VERSION': '3',
-    'OS_IMAGE_API_VERSION': '2',
     'BASE_DIR': os.path.dirname(sys.modules[__name__].__file__)
 }
 

@@ -31,7 +31,7 @@ class TestRunner(unittest.TestCase):
         r.run()
 
         mock_subprocess.run.assert_called_with(
-            ['neutron-ext-net.sh'],
+            [os.sep.join([r.tempdir, 'neutron-ext-net.sh'])],
             env=env)
 
         r.cleanup()

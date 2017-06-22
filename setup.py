@@ -7,12 +7,12 @@ reqs_file = os.path.join(this_dir, 'requirements.txt')
 scripts = glob('snapstack/scripts/*.sh') + glob('snapstack/scripts/*.py')
 
 
-def read_etc():
+def config_files():
     '''
     Grab all the snap configuration files we've stuffed in etc.
 
     '''
-    file_list = []
+    file_list = ['admin-openrc']
     for dir_, _, files in os.walk('snapstack/etc'):
         if not files:
             continue
@@ -36,7 +36,7 @@ SETUP = {
     'license': "Apache 2 License",
     'long_description': open('README.md').read(),
     'install_requires': reqs,
-    'package_data': {'snapstack': read_etc()},
+    'package_data': {'snapstack': config_files()},
     'scripts': scripts,
 }
 

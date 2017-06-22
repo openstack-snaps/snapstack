@@ -20,7 +20,10 @@ suffice.
 
 import logging
 import os
+import requests
+import stat
 import subprocess
+import tempfile
 from textwrap import dedent
 
 from snapstack import config
@@ -49,6 +52,22 @@ class Runner:
         self._location = location
         self._tests = tests
         self._base = self._validate_base(base or config.DEFAULT_BASE)
+        self._tempdir = None
+
+    @property
+    def tempdir(self):
+        '''
+        Magic method that creates a temporary dir to store scripts in if
+        none exists. Otherwise, returns the location.
+
+        (The TemporaryDirectory object will clean itself up when it is
+        destroyed, so we skip explit cleanup.)
+
+        '''
+        if self._tempdir is None:
+            self._tempdir = tempfile.TemporaryDirectory()
+
+        return self._tempdir.name
 
     def _validate_base(self, base):
         '''
@@ -79,14 +98,18 @@ class Runner:
         If the location is a remote location, fetch the script first.
 
         '''
-        if location.startswith('http') or location.startswith('ssh'):
-            # TODO Fetch stuff from github when appropriate
-            # TODO Need to figure out what to do with config files
-            # when we do -- they currently live in
-            # site-packages/snapstack/etc
-            raise Exception('Github fetching not yet implemented')
+        path_ = ''.join([location, test])
+        if path_.startswith('https://'):
+            # TODO: make this much more robust
+            remote = requests.get(path_)
+            remote.raise_for_status()
+            new_path = os.sep.join([self.tempdir, test])
+            with open(new_path, 'w') as f:
+                f.write(remote.text)
+            os.chmod(new_path, os.stat(new_path).st_mode | stat.S_IEXEC)
 
-        return ''.join([location, test])
+            path_ = new_path
+        return path_
 
     def _run(self, location, tests, snap=None):
         '''
