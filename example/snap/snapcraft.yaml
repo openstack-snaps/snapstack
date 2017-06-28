@@ -1,0 +1,15 @@
+name: example
+version: '0.1'
+summary: Example 'snap' for our test.
+description: |
+    This is a barebones snap, simply mean to illustrate how one might incorporate
+    the snap CI helper into the test for a real snap.
+
+grade: devel
+confinement: devmode
+
+parts:
+  example:
+    # See 'snapcraft plugins'
+    plugin: python
+    source: ..
