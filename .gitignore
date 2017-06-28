@@ -6,6 +6,10 @@ __pycache__/
 # Emacs
 *~
 
+# Snapcraft
+.snapcraft/
+prime/
+
 # C extensions
 *.so
 
