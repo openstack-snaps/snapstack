@@ -17,7 +17,7 @@ class ExampleTest(unittest.TestCase):
             files=['example.json'],  # Config files
             base=None  # Don't override default Base.
         )
-        
+
         try:
             r.run()
         finally:
