@@ -1,6 +1,6 @@
 import unittest
 
-from snapstack import Runner, TestFailure, InfraFailure  # noqa
+from snapstack import Runner
 
 
 class ExampleTest(unittest.TestCase):
