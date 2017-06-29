@@ -6,8 +6,6 @@ from snapstack import Runner
 class ExampleTest(unittest.TestCase):
 
     def test(self):
-        # TODO: install snap from local
-
         r = Runner(
             snap='example',  # Name of the snap
             location='./tests/',  # Parent location for tests and files

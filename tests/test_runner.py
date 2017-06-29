@@ -60,7 +60,7 @@ class TestRunner(unittest.TestCase):
         Comment out the skip above to setup snapstack on this machine.
 
         '''
-        r = Runner('keystone')
+        r = Runner('keystone', override_local_build=True)
         try:
             r.run()
         finally:

@@ -1,20 +1,6 @@
 '''
-Harness for doing basic CI on a snap. To use this library, you should:
-
-1) Import it into the tests for your snap.
-
-2) Create an instance of the Runner class, and invoke its run and
-cleanup routine, passing in your snap name, and pointers to shell
-scripts that will install the snap, test it, and clean it up.
-
-The runner is meant to be a fairly lighweight Python wrapper around
-your shell scripts. It also serves as a lighweight wrapper around a
-set of scripts that will setup a "base" openstack via a standard set
-of snaps. You can define your own base if necessary.
-
-The overarching purpose is to test the snap, rather than to
-extensively test the underlying surface, so basic tests will usually
-suffice.
+The main Runner class lives here; import it and invoke its .run
+and .cleanup routines to test a snap.
 
 '''
 
@@ -39,7 +25,7 @@ class Runner:
     '''
 
     def __init__(self, snap, location='{local}', tests=None, files=None,
-                 base=None):
+                 base=None, override_local_build=False):
         '''
         @param string name: Name of the snap being tested.
         @param string location: location of the test scripts for this snap.
@@ -56,6 +42,7 @@ class Runner:
         self._files = files
         self._base = self._validate_base(base or config.DEFAULT_BASE)
         self._tempdir = None
+        self._override = override_local_build
 
     @property
     def tempdir(self):
@@ -121,6 +108,40 @@ class Runner:
             path_ = new_path
         return path_
 
+    def _install_snap(self, snap):
+        '''
+        Install a snap. This will be a noop if the snap is alrady installed.
+
+        '''
+        if snap == self._snap and not self._override:
+            # This is the snap that we are testing. Install it from
+            # source, unless we've overridden this behavior (for
+            # example, we are testing the version of a snap that has
+            # been pushed to the store).
+            # TODO: make this be based on channels, with a special
+            # string for a "not in the snapstore" channel?
+            subprocess.check_output(["snapcraft", "prime"])
+            subprocess.check_output(
+                ["sudo", "snap", "try", "--devmode", "prime/"])
+
+            return
+
+        p = subprocess.run(
+            [config.INSTALL_SNAP.format(snap=snap, classic='')],
+            shell=True
+        )
+        if p.returncode > 0:
+            # Temp HACK: try to install in classic mode if
+            # standard mode doesn't work.'
+            p = subprocess.run(
+                [config.INSTALL_SNAP.format(
+                    snap=snap,
+                    classic='--classic ')],
+                shell=True)
+            if p.returncode > 0:
+                raise InfraFailure(
+                    "Failed to install snap {}".format(snap))
+
     def _run(self, location, tests=None, snap=None, files=None):
         '''
         Run a set of tests, specified by a parent location, a list of
@@ -140,23 +161,7 @@ class Runner:
         env.update({'BASE_DIR': self.tempdir})
 
         if snap:
-            # Install the snap. INSTALL_SNAP will be a noop if the
-            # snap is already intsalled.
-            p = subprocess.run(
-                [config.INSTALL_SNAP.format(snap=snap, classic='')],
-                shell=True
-            )
-            if p.returncode > 0:
-                # Temp HACK: try to install in classic mode if
-                # standard mode doesn't work.'
-                p = subprocess.run(
-                    [config.INSTALL_SNAP.format(
-                        snap=snap,
-                        classic='--classic ')],
-                    shell=True)
-                if p.returncode > 0:
-                    raise InfraFailure(
-                        "Failed to install snap {}".format(snap))
+            self._install_snap(snap)
 
         for f in files:
             self._fetch(location, f)
@@ -198,6 +203,9 @@ class Runner:
             if not spec.get('snap'):
                 continue
             subprocess.run(['sudo', 'snap', 'remove', spec['snap']])
+
+        if self._snap not in [spec.get('snap') for spec in self._base]:
+            subprocess.run(['sudo', 'snap', 'remove', self._snap])
 
         SQL_CLEANUP = dedent("""\
             sudo mysql -u root << EOF
