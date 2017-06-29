@@ -46,7 +46,7 @@ DEFAULT_BASE = [
 ]
 
 LOCATION_VARS = {
-    'snapstack': '',  # Just exists in the PATH.
+    'snapstack': '',  # Snapstack adds some scripts to your PATH.
     'snap-test': (
         'https://raw.githubusercontent.com/openstack-snaps/snap-test/master/'
     ),

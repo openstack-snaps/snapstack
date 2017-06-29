@@ -1,4 +1,7 @@
-This is a barebones "snap" that is intended to demonstrate the basic
+Snapstack Example
+=================
+
+This is a bare bones "snap" that is intended to demonstrate the basic
 flow of testing an openstack snap with snapstack.
 
 After you've installed the example snap (see below), you should be

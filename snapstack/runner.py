@@ -1,20 +1,6 @@
 '''
-Harness for doing basic CI on a snap. To use this library, you should:
-
-1) Import it into the tests for your snap.
-
-2) Create an instance of the Runner class, and invoke its run and
-cleanup routine, passing in your snap name, and pointers to shell
-scripts that will install the snap, test it, and clean it up.
-
-The runner is meant to be a fairly lighweight Python wrapper around
-your shell scripts. It also serves as a lighweight wrapper around a
-set of scripts that will setup a "base" openstack via a standard set
-of snaps. You can define your own base if necessary.
-
-The overarching purpose is to test the snap, rather than to
-extensively test the underlying surface, so basic tests will usually
-suffice.
+The main Runner class lives here; import it and invoke its .run
+and .cleanup routines to test a snap.
 
 '''
 
@@ -141,7 +127,7 @@ class Runner:
 
         if snap:
             # Install the snap. INSTALL_SNAP will be a noop if the
-            # snap is already intsalled.
+            # snap is already intalled.
             p = subprocess.run(
                 [config.INSTALL_SNAP.format(snap=snap, classic='')],
                 shell=True
