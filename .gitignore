@@ -9,6 +9,7 @@ __pycache__/
 # Snapcraft
 .snapcraft/
 prime/
+stage/
 
 # C extensions
 *.so
