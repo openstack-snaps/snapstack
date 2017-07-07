@@ -2,13 +2,14 @@ import os
 import mock
 import unittest
 
-from snapstack import Runner, InfraFailure
+from snapstack import Plan
 
 
 class TestRunner(unittest.TestCase):
 
-    @mock.patch('snapstack.runner.subprocess')
-    def test_faux_run(self, mock_subprocess):
+    @mock.patch('snapstack.plan.subprocess')
+    @mock.patch('snapstack.step.subprocess')
+    def test_faux_run(self, mock_subprocess, mock_subprocess_plan):
         '''
         _test_faux_run
 
@@ -18,37 +19,28 @@ class TestRunner(unittest.TestCase):
         '''
         # Pick something in the base to test, so we don't actually
         # need to fake out tests for it:
-        r = Runner('keystone')
+        plan = Plan()
 
         faux_p = mock.Mock()
         faux_p.returncode = 0
 
         env = dict(os.environ)
-        env.update({'BASE_DIR': r.tempdir})
+        env.update({'BASE_DIR': plan.tempdir})
 
         mock_subprocess.run.return_value = faux_p
+        mock_subprocess_plan.run.return_value = faux_p
 
-        r.run()
+        plan(cleanup=False)  # Tempdir will cleanup itself.
 
         self.assertTrue(
-            os.path.exists(os.sep.join([r.tempdir, 'admin-openrc'])))
+            os.path.exists(os.sep.join([plan.tempdir, 'admin-openrc'])))
 
         mock_subprocess.run.assert_called_with(
-            [os.sep.join([r.tempdir, 'scripts/neutron-ext-net.sh'])],
+            [os.sep.join([plan.tempdir, 'scripts/neutron-ext-net.sh'])],
             env=env)
 
-        r.cleanup()
-        mock_subprocess.run.assert_called_with(
-            ['sudo', 'rabbitmqctl', 'delete_user', 'openstack'])
-
-    def test_validate_base(self):
-        r = Runner('keystone')
-
-        invalid_base01 = [{'foo': 'bar'}]
-        valid_base01 = [{'location': '{github}', 'snap': 'foo', 'tests': []}]
-
-        self.assertRaises(InfraFailure, r._validate_base, invalid_base01)
-        self.assertTrue(r._validate_base(valid_base01))
+        plan()  # Run plan again with cleanup
+        mock_subprocess.run.assert_called_with(['sql_cleanup.py'], env=env)
 
     @unittest.skipUnless(
         os.environ.get('SNAPSTACK_TEST_INSTALL'),
@@ -60,8 +52,5 @@ class TestRunner(unittest.TestCase):
         Comment out the skip above to setup snapstack on this machine.
 
         '''
-        r = Runner('keystone', override_local_build=True)
-        try:
-            r.run()
-        finally:
-            r.cleanup()
+        plan = Plan()
+        plan()
