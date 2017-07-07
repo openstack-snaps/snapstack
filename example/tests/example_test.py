@@ -23,6 +23,8 @@ class ExampleTest(unittest.TestCase):
                                     # points at the 'tests' directory.
             tests=['example.sh'],  # Test the snap
             files=['example.json'],  # Config files
+            snap_store=False  # Build from local source, rather than
+                              # install from the snap store.
         )
         plan = Plan(tests=[example])
         plan()

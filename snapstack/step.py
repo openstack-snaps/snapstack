@@ -24,11 +24,16 @@ class Step:
     def __init__(self, snap=None, script_loc='{local}', tests=None,
                  files=None, snap_store=True, classic=False):
         '''
-        # TODO: update this
+        @param string snap: The name of a snap, if any, to be installed in
+          this Step.
         @param string script_loc: parent location of the test scripts for this
             snap. Possibly a url, possibly a relative or absolute path.
-        @param list tests: List of scripts to execute in order.
-        @param list files: List of config files that we may need to reference.
+        @param list tests: List of scripts, to execute in order.
+        @param list files: List of config files that the scripts may need
+          to reference.
+        @param bool snap_store: if True, install the snap from the store.
+          If False, install it from local source.
+        @param bool classic: if True, install the snap with the --classic flag.
 
         '''
         self.log = logging.getLogger()

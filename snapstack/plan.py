@@ -16,9 +16,11 @@ class Plan:
     '''
     def __init__(self, tests=None, setup=None, cleanup=None):
         '''
-        @param list setup_steps: A list of Step objects.
-        @param list test_steps: A list of Step objects.
-        @param list cleanup_steps: A list of Step objects.
+        @param list tests: A list of Step objects, comprising tests
+          for a snap or snaps.
+        @param list setup: A list of Step objects, comprising the setup for
+          snapstack.
+        @param list cleanup: A list of Step objects, comprising cleanup steps.
 
         '''
         self._tempdir = tempfile.TemporaryDirectory()
@@ -30,8 +32,7 @@ class Plan:
 
     def __call__(self, cleanup=True):
         '''
-        Setup a snapstack on this machine, and run some basic smoke tests
-        on it.
+        Execute all of our steps. Cleanup may be skipped.
 
         '''
         try:
