@@ -47,40 +47,40 @@ class Setup(Base):
         )
         self._steps['packages'] = Step(
             script_loc='{snapstack}',
-            tests=['packages.sh']
+            scripts=['packages.sh']
         )
         self._steps['rabbit_and_db'] = Step(
             script_loc='{snap-test}',
-            tests=['scripts/rabbitmq.sh', 'scripts/database.sh']
+            scripts=['scripts/rabbitmq.sh', 'scripts/database.sh']
         )
         self._steps['keystone'] = Step(
             snap='keystone',
             script_loc='{snap-test}',
-            tests=['scripts/keystone.sh']
+            scripts=['scripts/keystone.sh']
         )
         self._steps['nova'] = Step(
             snap='nova',
             script_loc='{snap-test}',
-            tests=['scripts/nova.sh']
+            scripts=['scripts/nova.sh']
         )
         self._steps['neutron'] = Step(
             snap='neutron',
             script_loc='{snap-test}',
-            tests=['scripts/neutron.sh']
+            scripts=['scripts/neutron.sh']
         )
         self._steps['glance'] = Step(
             snap='glance',
             script_loc='{snap-test}',
-            tests=['scripts/glance.sh']
+            scripts=['scripts/glance.sh']
         )
         self._steps['nova_hypervisor'] = Step(
             snap='nova-hypervisor',
             script_loc='{snap-test}',
-            tests=['scripts/nova-hypervisor.sh']
+            scripts=['scripts/nova-hypervisor.sh']
         )
         self._steps['neutron_ext_net'] = Step(
             script_loc='{snap-test}',
-            tests=['scripts/neutron-ext-net.sh']
+            scripts=['scripts/neutron-ext-net.sh']
         )
 
 
@@ -89,5 +89,5 @@ class Cleanup(Base):
         super(Cleanup, self).__init__()
         self._steps['sql_cleanup'] = Step(
             script_loc='{snapstack}',
-            tests=['sql_cleanup.py']
+            scripts=['sql_cleanup.py']
         )

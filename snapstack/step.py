@@ -21,14 +21,14 @@ class Step:
     running test scripts for a snap, and installing config files.
 
     '''
-    def __init__(self, snap=None, script_loc='{local}', tests=None,
+    def __init__(self, snap=None, script_loc='{local}', scripts=None,
                  files=None, snap_store=True, classic=False):
         '''
         @param string snap: The name of a snap, if any, to be installed in
           this Step.
         @param string script_loc: parent location of the test scripts for this
             snap. Possibly a url, possibly a relative or absolute path.
-        @param list tests: List of scripts, to execute in order.
+        @param list scripts: List of scripts, to execute in order.
         @param list files: List of config files that the scripts may need
           to reference.
         @param bool snap_store: if True, install the snap from the store.
@@ -39,7 +39,7 @@ class Step:
         self.log = logging.getLogger()
         self.snap = snap
         self._location = script_loc
-        self._tests = tests or []
+        self._scripts = scripts or []
         self._files = files or []
         self._snap_store = snap_store
         self._tempdir = None
@@ -107,7 +107,7 @@ class Step:
             raise InfraFailure(
                 "Failed to install snap {}".format(self.snap))
 
-    def __call__(self, tempdir=None):
+    def run(self, tempdir=None):
         '''
         Run the set of tests defined by this snap (or just download some
         config files, if the step has no executable components).
@@ -130,8 +130,8 @@ class Step:
         for f in self._files:
             self._fetch(location, f)
 
-        for test in self._tests:
-            script = self._fetch(location, test)
+        for script in self._scripts:
+            script = self._fetch(location, script)
             p = subprocess.run([script], env=env)
             if p.returncode > 0:
                 raise TestFailure(

@@ -26,18 +26,19 @@ class Plan:
         self._tempdir = tempfile.TemporaryDirectory()
         self.tempdir = self._tempdir.name
 
-        self._setup = setup or base.Setup().steps()
-        self._cleanup = cleanup or base.Cleanup().steps()
+        self._setup = base.Setup().steps() if setup is None else setup
+        self._cleanup = base.Cleanup().steps() if cleanup is None else cleanup
+
         self._tests = tests or []
 
-    def __call__(self, cleanup=True):
+    def run(self, cleanup=True):
         '''
         Execute all of our steps. Cleanup may be skipped.
 
         '''
         try:
             for step in self._setup + self._tests:
-                step(tempdir=self._tempdir)
+                step.run(tempdir=self._tempdir)
         finally:
             if not cleanup:
                 return
@@ -48,4 +49,4 @@ class Plan:
                 subprocess.run(['sudo', 'snap', 'remove', step.snap])
 
             for step in self._cleanup:
-                step(tempdir=self._tempdir)
+                step.run(tempdir=self._tempdir)

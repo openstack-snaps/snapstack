@@ -9,7 +9,7 @@ class ExampleTest(unittest.TestCase):
         '''
         _test_example_
 
-        Basic test, which installs and tests and example
+        Basic test, which installs and tests an example
         snap, after letting the Plan object build the default
         snapstack.
 
@@ -21,13 +21,13 @@ class ExampleTest(unittest.TestCase):
             script_loc='./tests/',  # Parent location for tests and files
                                     # below. {local} is a magic string that
                                     # points at the 'tests' directory.
-            tests=['example.sh'],  # Test the snap
+            scripts=['example.sh'],  # Test the snap
             files=['example.json'],  # Config files
             snap_store=False  # Build from local source, rather than
                               # install from the snap store.
         )
         plan = Plan(tests=[example])
-        plan()
+        plan.run()
 
     def test_custom_base(self):
         '''
@@ -41,20 +41,41 @@ class ExampleTest(unittest.TestCase):
         cleanup = Cleanup()
 
         # Add a step.
-        example = Step(
-            snap='example',
-            script_loc='./tests/',
-            tests=['example.sh'],
-            files=['example.json'],
+        somesnap = Step(
+            snap='example',  # Re-use our example snap, for convenience.
+            script_loc='./tests/',  # In an actual test, these would
+                                    # probably be remote, as the snap
+                                    # we're adding to the base isn't
+                                    # part of our source.
+            scripts=['somesnap.sh'],
+            files=[],
         )
-        setup.add_steps(('example', example))
+        setup.add_steps(('somesnap', somesnap))
 
         # Remove steps.
         setup.remove_steps(
             'keystone', 'nova', 'neutron', 'glance', 'nova_hypervisor',
             'neutron_ext_net')
 
+        # Note that Cleanup can be modified in the same way as the above.
+
+        # Setup our test
+        example = Step(
+            snap='example',  # Name of the snap
+            script_loc='./tests/',  # Parent location for tests and files
+                                    # below. {local} is a magic string that
+                                    # points at the 'tests' directory.
+            scripts=['example.sh'],  # Test the snap
+            files=['example.json'],  # Config files
+            snap_store=False  # Build from local source, rather than
+                              # install from the snap store.
+        )
+
         # Run with our changes (this will download the config files,
         # but then install nothing but the example snap).
-        plan = Plan(tests=[], setup=setup.steps(), cleanup=cleanup.steps())
-        plan()
+        plan = Plan(
+            tests=[example],
+            setup=setup.steps(),
+            cleanup=cleanup.steps()
+        )
+        plan.run()

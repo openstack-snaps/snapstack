@@ -30,7 +30,7 @@ class TestRunner(unittest.TestCase):
         mock_subprocess.run.return_value = faux_p
         mock_subprocess_plan.run.return_value = faux_p
 
-        plan(cleanup=False)  # Tempdir will cleanup itself.
+        plan.run(cleanup=False)  # Tempdir will cleanup itself.
 
         self.assertTrue(
             os.path.exists(os.sep.join([plan.tempdir, 'admin-openrc'])))
@@ -39,7 +39,7 @@ class TestRunner(unittest.TestCase):
             [os.sep.join([plan.tempdir, 'scripts/neutron-ext-net.sh'])],
             env=env)
 
-        plan()  # Run plan again with cleanup
+        plan.run()  # Run plan again with cleanup
         mock_subprocess.run.assert_called_with(['sql_cleanup.py'], env=env)
 
     @unittest.skipUnless(
@@ -53,4 +53,4 @@ class TestRunner(unittest.TestCase):
 
         '''
         plan = Plan()
-        plan()
+        plan.run()

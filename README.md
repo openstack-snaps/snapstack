@@ -27,7 +27,7 @@ plan()
 
 ```
 
-The runner is meant to be a fairly lightweight Python wrapper
+This codebase is meant to be a fairly lightweight Python wrapper
 around your shell scripts. The purpose is to test the snap, rather
 than to extensively test the underlying source, so basic tests will
 usually suffice.
