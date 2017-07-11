@@ -75,7 +75,7 @@ class ExampleTest(unittest.TestCase):
         # but then install nothing but the example snap).
         plan = Plan(
             tests=[example],
-            setup=setup.steps(),
-            cleanup=cleanup.steps()
+            base_setup=setup.steps(),
+            base_cleanup=cleanup.steps()
         )
         plan.run()

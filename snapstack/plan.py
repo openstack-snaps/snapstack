@@ -14,22 +14,33 @@ class Plan:
     '''
 
     '''
-    def __init__(self, tests=None, setup=None, cleanup=None):
+    def __init__(self, tests=None, test_cleanup=None, base_setup=None,
+                 base_cleanup=None):
         '''
         @param list tests: A list of Step objects, comprising tests
           for a snap or snaps.
-        @param list setup: A list of Step objects, comprising the setup for
-          snapstack.
-        @param list cleanup: A list of Step objects, comprising cleanup steps.
+        @param list test_cleanup: A list of Step objects, comprising scripts
+          that will cleanup after the tests. (These scripts will always run,
+          even if a test fails or errors out.)
+        @param list base_setup: A list of Step objects, comprising the setup
+          for snapstack. You can customize this by initializing a base.Setup
+          object, adding or removing Steps, then passing the return from that
+          object's .steps method to this argument.
+        @param list base_cleanup: A list of Step objects, comprising general
+          cleanup for snapstack. Similar to the above, you can customize
+          this with a base.Cleanup object.
 
         '''
         self._tempdir = tempfile.TemporaryDirectory()
         self.tempdir = self._tempdir.name
 
-        self._setup = base.Setup().steps() if setup is None else setup
-        self._cleanup = base.Cleanup().steps() if cleanup is None else cleanup
+        self._base_setup = base.Setup().steps() if\
+            base_setup is None else base_setup
+        self._base_cleanup = base.Cleanup().steps() if\
+            base_cleanup is None else base_cleanup
 
         self._tests = tests or []
+        self._test_cleanup = test_cleanup or []
 
     def run(self, cleanup=True):
         '''
@@ -37,16 +48,19 @@ class Plan:
 
         '''
         try:
-            for step in self._setup + self._tests:
+            for step in self._base_setup + self._tests:
                 step.run(tempdir=self._tempdir)
         finally:
             if not cleanup:
                 return
 
-            for step in self._setup + self._tests:
+            for step in self._base_setup + self._tests:
                 if not step.snap:
                     continue
                 subprocess.run(['sudo', 'snap', 'remove', step.snap])
 
-            for step in self._cleanup:
+            for step in self._test_cleanup:
+                step.run(tempdir=self._tempdir)
+
+            for step in self._base_cleanup:
                 step.run(tempdir=self._tempdir)
