@@ -44,6 +44,7 @@ class Step:
         self._snap_store = snap_store
         self._tempdir = None
         self._classic = ' --classic' if classic else ''
+        self._snap_build_proxy = None
 
     @property
     def tempdir(self):
@@ -91,10 +92,18 @@ class Step:
 
         '''
         if not self._snap_store:
-            subprocess.check_output(["snapcraft", "prime"])
-            subprocess.check_output(
-                ["sudo", "snap", "try", "--devmode", "prime/"])
+            env = dict(os.environ)
+            if self._snap_build_proxy:
+                env['HTTP_PROXY'] = self._snap_build_proxy
+                env['HTTPS_PROXY'] = self._snap_build_proxy
 
+            subprocess.run(["snapcraft", "clean"], env=env, check=True)
+            subprocess.run(["snapcraft", "prime"], env=env, check=True)
+            subprocess.run(
+                ["sudo", "snap", "try", "--devmode", "prime/"],
+                env=env,
+                check=True
+            )
             return
 
         # TODO: Add handling for channels?
@@ -107,15 +116,17 @@ class Step:
             raise InfraFailure(
                 "Failed to install snap {}".format(self.snap))
 
-    def run(self, tempdir=None):
+    def run(self, tempdir=None, snap_build_proxy=None):
         '''
         Run the set of tests defined by this snap (or just download some
         config files, if the step has no executable components).
 
         '''
 
-        if tempdir:
+        if tempdir is not None:
             self._tempdir = tempdir
+        if snap_build_proxy is not None:
+            self._snap_build_proxy = snap_build_proxy
 
         location_vars = dict(config.LOCATION_VARS)  # Copy
         location_vars['snap'] = self.snap

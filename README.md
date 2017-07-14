@@ -34,3 +34,12 @@ usually suffice.
 
 Take a look in the example directory to see the source snippet above
 in context.
+
+Flags and Other Notes
+---------------------
+
+If you are in a network restricted environment, and need to go through
+a proxy to build a snap, set SNAP_BUILD_PROXY in your terminal
+environment. This will set HTTP/S_PROXY for just the snap build, which
+is useful, as simply setting HTTP_PROXY may interfere with some of the
+snap tests.

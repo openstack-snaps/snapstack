@@ -4,6 +4,7 @@ for a snap inside of a temporary Openstack environment.
 
 '''
 
+import os
 import subprocess
 import tempfile
 
@@ -42,6 +43,8 @@ class Plan:
         self._tests = tests or []
         self._test_cleanup = test_cleanup or []
 
+        self._snap_build_proxy = os.environ.get('SNAP_BUILD_PROXY')
+
     def run(self, cleanup=True):
         '''
         Execute all of our steps. Cleanup may be skipped.
@@ -49,7 +52,10 @@ class Plan:
         '''
         try:
             for step in self._base_setup + self._tests:
-                step.run(tempdir=self._tempdir)
+                step.run(
+                    tempdir=self._tempdir,
+                    snap_build_proxy=self._snap_build_proxy
+                )
         finally:
             if not cleanup:
                 return
