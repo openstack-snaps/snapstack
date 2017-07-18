@@ -98,12 +98,9 @@ class Step:
                 env['HTTPS_PROXY'] = self._snap_build_proxy
 
             subprocess.run(["snapcraft", "clean"], env=env, check=True)
-            subprocess.run(["snapcraft", "prime"], env=env, check=True)
-            subprocess.run(
-                ["sudo", "snap", "try", "--devmode", "prime/"],
-                env=env,
-                check=True
-            )
+            subprocess.run(["snapcraft"], env=env, check=True)
+            subprocess.run(["sudo snap install --dangerous *.snap"], env=env,
+                           check=True, shell=True)
             return
 
         # TODO: Add handling for channels?

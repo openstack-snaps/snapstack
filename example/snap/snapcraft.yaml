@@ -6,7 +6,7 @@ description: |
     the snap CI helper into the test for a real snap.
 
 grade: devel
-confinement: devmode
+confinement: strict
 
 parts:
   example:
