@@ -113,6 +113,21 @@ class Step:
             raise InfraFailure(
                 "Failed to install snap {}".format(self.snap))
 
+    def _gate_check(self, env):
+        '''
+        Check to see if we are in a gerrit gate. If so, add a flag to
+        ingore unatheticated apt repos to our environment. (The gerrit
+        gate doesn't sign its repositories.)
+
+        '''
+        repos = subprocess.run(['apt-cache', 'policy'], stdout=subprocess.PIPE)
+        for line in repos.stdout.decode('utf-8').split(os.linesep):
+            if "internap.openstack.org" in line:
+                env['ALLOW_UNAUTHENTICATED'] = "--allow-unauthenticated"
+                break
+
+        return env
+
     def run(self, tempdir=None, snap_build_proxy=None):
         '''
         Run the set of tests defined by this snap (or just download some
@@ -131,6 +146,7 @@ class Step:
 
         env = dict(os.environ)
         env.update({'BASE_DIR': self.tempdir})
+        env = self._gate_check(env)
 
         if self.snap:
             self._install_snap()

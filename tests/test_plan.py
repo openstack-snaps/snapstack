@@ -2,7 +2,7 @@ import os
 import mock
 import unittest
 
-from snapstack import Plan
+from snapstack import Plan, Step
 
 
 class TestRunner(unittest.TestCase):
@@ -23,6 +23,7 @@ class TestRunner(unittest.TestCase):
 
         faux_p = mock.Mock()
         faux_p.returncode = 0
+        faux_p.stdout.decode.return_value = 'foo\nbar'
 
         env = dict(os.environ)
         env.update({'BASE_DIR': plan.tempdir})
@@ -54,3 +55,22 @@ class TestRunner(unittest.TestCase):
         '''
         plan = Plan()
         plan.run()
+
+    @mock.patch('snapstack.step.subprocess')
+    def test_gate_check(self, mock_subprocess):
+        step = Step()
+
+        faux_p = mock.Mock()
+        mock_subprocess.run.return_value = faux_p
+
+        faux_p.stdout.decode.return_value = 'internap.openstack.org\nbar'
+
+        ret = step._gate_check({})
+
+        self.assertEqual(
+            ret.get('ALLOW_UNAUTHENTICATED'), '--allow-unauthenticated')
+
+        faux_p.stdout.decode.return_value = 'foo.openstack.org\nbar'
+
+        ret = step._gate_check({})
+        self.assertFalse(ret.get('ALLOW_UNAUTHENTICATED'))
