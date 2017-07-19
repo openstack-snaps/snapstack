@@ -8,7 +8,7 @@
 set -ex
 
 sudo apt update
-DEBIAN_FRONTEND='noninteractive' sudo -E apt install --yes python3-openstackclient rabbitmq-server mysql-server \
+DEBIAN_FRONTEND='noninteractive' sudo -E apt install $IGNORE_UNAUTHENTICATED --yes python3-openstackclient rabbitmq-server mysql-server \
     memcached libvirt-bin qemu-kvm apparmor-utils python-neutronclient openvswitch-switch
 
 sudo snap install core
