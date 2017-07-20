@@ -122,7 +122,7 @@ class Step:
         '''
         repos = subprocess.run(['apt-cache', 'policy'], stdout=subprocess.PIPE)
         for line in repos.stdout.decode('utf-8').split(os.linesep):
-            if "internap.openstack.org" in line:
+            if "openstack.org" in line:
                 env['ALLOW_UNAUTHENTICATED'] = "--allow-unauthenticated"
                 break
 
