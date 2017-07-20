@@ -70,7 +70,7 @@ class TestRunner(unittest.TestCase):
         self.assertEqual(
             ret.get('ALLOW_UNAUTHENTICATED'), '--allow-unauthenticated')
 
-        faux_p.stdout.decode.return_value = 'foo.openstack.org\nbar'
+        faux_p.stdout.decode.return_value = 'foo.openstack.com\nbar'
 
         ret = step._gate_check({})
         self.assertFalse(ret.get('ALLOW_UNAUTHENTICATED'))
