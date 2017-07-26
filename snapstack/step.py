@@ -14,6 +14,29 @@ from snapstack import config
 from snapstack.errors import InfraFailure, TestFailure
 
 
+def fix_proxy_string(s, https=False):
+    '''
+    Helper method for SNAP_BUILD_PROXY env variable.
+
+    Since set one value and use it to set both HTTP_PROXY and
+    HTTPS_PROXY, fixup the string to use the correct protocol.
+
+    '''
+    if not s.startswith('http'):
+        if https:
+            return ''.join(['https://', s])
+        return ''.join(['http://', s])
+    if s.startswith('http://'):
+        if not https:
+            return s
+        return ''.join(['https://', s[7:]])
+    if s.startswith('https://'):
+        if https:
+            return s
+        return ''.join(['http://', s[8:]])
+    raise TypeError('Could not parse proxy string: {}'.format(s))
+
+
 class Step:
     '''
     A Step is a single Step in a Plan. Each step may do multiple
@@ -94,8 +117,9 @@ class Step:
         if not self._snap_store:
             env = dict(os.environ)
             if self._snap_build_proxy:
-                env['HTTP_PROXY'] = self._snap_build_proxy
-                env['HTTPS_PROXY'] = self._snap_build_proxy
+                env['HTTP_PROXY'] = fix_proxy_string(self._snap_build_proxy)
+                env['HTTPS_PROXY'] = fix_proxy_string(self._snap_build_proxy,
+                                                      https=True)
 
             subprocess.run(["snapcraft", "clean"], env=env, check=True)
             subprocess.run(["snapcraft"], env=env, check=True)
