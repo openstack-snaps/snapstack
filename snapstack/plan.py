@@ -52,6 +52,11 @@ class Plan:
         '''
         try:
             for step in self._base_setup + self._tests:
+                if step.snap:
+                    step._snap_build_proxy = self._snap_build_proxy
+                    step._install_snap()
+
+            for step in self._base_setup + self._tests:
                 step.run(
                     tempdir=self._tempdir,
                     snap_build_proxy=self._snap_build_proxy

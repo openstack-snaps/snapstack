@@ -17,7 +17,11 @@ else
     sudo apt update
 fi
 
-DEBIAN_FRONTEND='noninteractive' sudo -E apt install $ALLOW_UNAUTHENTICATED --yes python3-openstackclient rabbitmq-server mysql-server \
-    memcached libvirt-bin qemu-kvm apparmor-utils python-neutronclient openvswitch-switch
+snap list | grep -q openstackclients || {
+    sudo snap install --edge --classic openstackclients
+}
+
+DEBIAN_FRONTEND='noninteractive' sudo -E apt install $ALLOW_UNAUTHENTICATED --yes rabbitmq-server mysql-server \
+    memcached libvirt-bin qemu-kvm apparmor-utils openvswitch-switch
 
 sudo snap install core
