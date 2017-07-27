@@ -45,7 +45,7 @@ class Step:
 
     '''
     def __init__(self, snap=None, script_loc='{local}', scripts=None,
-                 files=None, snap_store=True, classic=False):
+                 files=None, snap_store=True, classic=False, channel=None):
         '''
         @param string snap: The name of a snap, if any, to be installed in
           this Step.
@@ -67,6 +67,8 @@ class Step:
         self._snap_store = snap_store
         self._tempdir = None
         self._classic = ' --classic' if classic else ''
+        self._channel = '--channel={channel}'.format(
+            channel=channel or config.CHANNEL)
         self._snap_build_proxy = None
 
     @property
@@ -130,7 +132,7 @@ class Step:
         # TODO: Add handling for channels?
         p = subprocess.run(
             [config.INSTALL_SNAP.format(
-                snap=self.snap, classic=self._classic)],
+                snap=self.snap, classic=self._classic, channel=self._channel)],
             shell=True
         )
         if p.returncode > 0:
@@ -152,17 +154,22 @@ class Step:
 
         return env
 
-    def run(self, tempdir=None, snap_build_proxy=None):
+    def run(self, tempdir=None, snap_build_proxy=None, channel=None):
         '''
         Run the set of tests defined by this snap (or just download some
         config files, if the step has no executable components).
 
         '''
 
+        # Possibly override temp dir.
         if tempdir is not None:
             self._tempdir = tempdir
+        # Possibly add http and https proxies
         if snap_build_proxy is not None:
             self._snap_build_proxy = snap_build_proxy
+        # Possibly override channel.
+        if channel is not None:
+            self._channel = '--channel={channel}'.format(channel)
 
         location_vars = dict(config.LOCATION_VARS)  # Copy
         location_vars['snap'] = self.snap

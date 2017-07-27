@@ -66,7 +66,7 @@ class Setup(Base):
         self._steps['neutron'] = Step(
             snap='neutron',
             script_loc='{snap-test}',
-            scripts=['scripts/neutron.sh']
+            scripts=['scripts/neutron.sh'],
         )
         self._steps['glance'] = Step(
             snap='glance',
