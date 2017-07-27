@@ -5,7 +5,7 @@ import unittest
 from snapstack import Plan, Step
 
 
-class TestRunner(unittest.TestCase):
+class TestPlan(unittest.TestCase):
 
     @mock.patch('snapstack.plan.subprocess')
     @mock.patch('snapstack.step.subprocess')
