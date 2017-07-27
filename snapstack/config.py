@@ -35,8 +35,12 @@ LOCATION_VARS = {
     'snap': None  # Filled in by _run
 }
 
+
+CHANNEL = 'ocata/edge'
+
+
 INSTALL_SNAP = """\
 snap list | grep -q "^{snap}\s" || {{
-    sudo snap install --edge {classic}{snap}
+    sudo snap install{classic} {channel} {snap}
 }}
 """
