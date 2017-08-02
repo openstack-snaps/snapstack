@@ -111,23 +111,41 @@ class Step:
             path_ = new_path
         return path_
 
+    def _install_local_snap(self):
+        '''
+        Install a snap from local source.
+
+        '''
+        # Possibly edit snapcraft.yaml to include proxies for the gerrit gate.
+        if config.in_gate():
+            with open('snapcraft.yaml', 'r') as snapcraft:
+                data = snapcraft.read()
+                for pair in config.GATE_REPLACES:
+                    data.replace(*pair)
+
+            with open('snapcraft.yaml', 'w') as snapcraft:
+                snapcraft.write(data)
+
+        # Possibly add HTTP and HTTPS Proxies.
+        env = dict(os.environ)
+        if self._snap_build_proxy:
+            env['HTTP_PROXY'] = fix_proxy_string(self._snap_build_proxy)
+            env['HTTPS_PROXY'] = fix_proxy_string(self._snap_build_proxy,
+                                                  https=True)
+
+        # Run snapcraft
+        subprocess.run(["snapcraft", "clean"], env=env, check=True)
+        subprocess.run(["snapcraft"], env=env, check=True)
+        subprocess.run(["sudo snap install --dangerous *.snap"], env=env,
+                       check=True, shell=True)
+
     def _install_snap(self):
         '''
         Install a snap. This will be a noop if the snap is alrady installed.
 
         '''
         if not self._snap_store:
-            env = dict(os.environ)
-            if self._snap_build_proxy:
-                env['HTTP_PROXY'] = fix_proxy_string(self._snap_build_proxy)
-                env['HTTPS_PROXY'] = fix_proxy_string(self._snap_build_proxy,
-                                                      https=True)
-
-            subprocess.run(["snapcraft", "clean"], env=env, check=True)
-            subprocess.run(["snapcraft"], env=env, check=True)
-            subprocess.run(["sudo snap install --dangerous *.snap"], env=env,
-                           check=True, shell=True)
-            return
+            return self._install_local_snap()
 
         # TODO: Add handling for channels?
         p = subprocess.run(
