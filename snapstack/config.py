@@ -1,3 +1,6 @@
+import os
+from functools import partial
+
 '''
 Default config values for snapstack live here.
 
@@ -44,3 +47,9 @@ snap list | grep -q "^{snap}\s" || {{
     sudo snap install{classic} {channel} {snap}
 }}
 """
+
+in_gate = partial(os.path.isdir, '/home/zuul/src/git.openstack.org')
+GATE_REPLACES = [
+    ('https://github.com/openstack', 'https://git.openstack.org/openstack'),
+    ('https://git.openstack.org', 'file:///home/zuul/src/git.openstack.org'),
+]
