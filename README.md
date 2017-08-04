@@ -47,3 +47,7 @@ with some of the snap tests.
 Note that you may use one string for both http and https proxy, and
 you may omit the protocol (http/s://) part of the url; snapstack will
 fix the url up before using it.
+
+If you wish to reference this proxy in a script, reference
+OPT_HTTP_PROXY, and OPT_HTTPS_PROXY, for http and https proxies,
+respectively.

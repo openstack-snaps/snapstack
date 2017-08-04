@@ -139,13 +139,22 @@ class Step:
             raise InfraFailure(
                 "Failed to install snap {}".format(self.snap))
 
-    def _gate_check(self, env):
+    def _make_env(self):
         '''
-        Check to see if we are in a gerrit gate. If so, add a flag to
-        ingore unatheticated apt repos to our environment. (The gerrit
-        gate doesn't sign its repositories.)
+        Passes back a copy of the system env, adding some custom things to
+        it.
 
         '''
+        env = dict(os.environ)
+
+        # Add env variables used in scripts
+        env['BASE_DIR'] = self.tempdir
+        if self._snap_build_proxy:
+            env['OPT_HTTP_PROXY'] = fix_proxy_string(self._snap_build_proxy)
+            env['OPT_HTTPS_PROXY'] = fix_proxy_string(self._snap_build_proxy,
+                                                      https=True)
+
+        # Fix issue with unauthenticated apt repos in gerrit gate
         repos = subprocess.run(['apt-cache', 'policy'], stdout=subprocess.PIPE)
         for line in repos.stdout.decode('utf-8').split(os.linesep):
             if "openstack.org" in line:
@@ -175,9 +184,7 @@ class Step:
         location_vars['snap'] = self.snap
         location = self._location.format(**location_vars)
 
-        env = dict(os.environ)
-        env.update({'BASE_DIR': self.tempdir})
-        env = self._gate_check(env)
+        env = self._make_env()
 
         if self.snap:
             self._install_snap()
