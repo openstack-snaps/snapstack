@@ -43,7 +43,8 @@ class Plan:
         self._tests = tests or []
         self._test_cleanup = test_cleanup or []
 
-        self._snap_build_proxy = os.environ.get('SNAP_BUILD_PROXY')
+        self._http_proxy = os.environ.get('SNAPSTACK_HTTP_PROXY')
+        self._https_proxy = os.environ.get('SNAPSTACK_HTTPS_PROXY')
 
     def run(self, cleanup=True):
         '''
@@ -54,8 +55,8 @@ class Plan:
             for step in self._base_setup + self._tests:
                 step.run(
                     tempdir=self._tempdir,
-                    snap_build_proxy=self._snap_build_proxy
-                )
+                    http_proxy=self._http_proxy,
+                    https_proxy=self._https_proxy)
         finally:
             if not cleanup:
                 return

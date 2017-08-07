@@ -14,29 +14,6 @@ from snapstack import config
 from snapstack.errors import InfraFailure, TestFailure
 
 
-def fix_proxy_string(s, https=False):
-    '''
-    Helper method for SNAP_BUILD_PROXY env variable.
-
-    Since set one value and use it to set both HTTP_PROXY and
-    HTTPS_PROXY, fixup the string to use the correct protocol.
-
-    '''
-    if not s.startswith('http'):
-        if https:
-            return ''.join(['https://', s])
-        return ''.join(['http://', s])
-    if s.startswith('http://'):
-        if not https:
-            return s
-        return ''.join(['https://', s[7:]])
-    if s.startswith('https://'):
-        if https:
-            return s
-        return ''.join(['http://', s[8:]])
-    raise TypeError('Could not parse proxy string: {}'.format(s))
-
-
 class Step:
     '''
     A Step is a single Step in a Plan. Each step may do multiple
@@ -69,7 +46,8 @@ class Step:
         self._classic = ' --classic' if classic else ''
         self._channel = '--channel={channel}'.format(
             channel=channel or config.CHANNEL)
-        self._snap_build_proxy = None
+        self._http_proxy = None
+        self._https_proxy = None
 
     @property
     def tempdir(self):
@@ -118,10 +96,10 @@ class Step:
         '''
         if not self._snap_store:
             env = dict(os.environ)
-            if self._snap_build_proxy:
-                env['HTTP_PROXY'] = fix_proxy_string(self._snap_build_proxy)
-                env['HTTPS_PROXY'] = fix_proxy_string(self._snap_build_proxy,
-                                                      https=True)
+            if self._http_proxy is not None:
+                env['HTTP_PROXY'] = self._http_proxy
+            if self._https_proxy is not None:
+                env['HTTPS_PROXY'] = self._https_proxy
 
             subprocess.run(["snapcraft", "clean"], env=env, check=True)
             subprocess.run(["snapcraft"], env=env, check=True)
@@ -139,13 +117,22 @@ class Step:
             raise InfraFailure(
                 "Failed to install snap {}".format(self.snap))
 
-    def _gate_check(self, env):
+    def _make_env(self):
         '''
-        Check to see if we are in a gerrit gate. If so, add a flag to
-        ingore unatheticated apt repos to our environment. (The gerrit
-        gate doesn't sign its repositories.)
+        Passes back a copy of the system env, adding some custom things to
+        it.
 
         '''
+        env = dict(os.environ)
+
+        # Add env variables used in scripts
+        env['BASE_DIR'] = self.tempdir
+        if self._http_proxy is not None:
+            env['SNAPSTACK_HTTP_PROXY'] = self._http_proxy
+        if self._https_proxy is not None:
+            env['SNAPSTACK_HTTPS_PROXY'] = self._https_proxy
+
+        # Fix issue with unauthenticated apt repos in gerrit gate
         repos = subprocess.run(['apt-cache', 'policy'], stdout=subprocess.PIPE)
         for line in repos.stdout.decode('utf-8').split(os.linesep):
             if "openstack.org" in line:
@@ -154,7 +141,8 @@ class Step:
 
         return env
 
-    def run(self, tempdir=None, snap_build_proxy=None, channel=None):
+    def run(self, tempdir=None, http_proxy=None, https_proxy=None,
+            channel=None):
         '''
         Run the set of tests defined by this snap (or just download some
         config files, if the step has no executable components).
@@ -165,8 +153,11 @@ class Step:
         if tempdir is not None:
             self._tempdir = tempdir
         # Possibly add http and https proxies
-        if snap_build_proxy is not None:
-            self._snap_build_proxy = snap_build_proxy
+        if http_proxy is not None:
+            self._http_proxy = http_proxy
+        if https_proxy is not None:
+            self._https_proxy = https_proxy
+
         # Possibly override channel.
         if channel is not None:
             self._channel = '--channel={channel}'.format(channel)
@@ -175,9 +166,7 @@ class Step:
         location_vars['snap'] = self.snap
         location = self._location.format(**location_vars)
 
-        env = dict(os.environ)
-        env.update({'BASE_DIR': self.tempdir})
-        env = self._gate_check(env)
+        env = self._make_env()
 
         if self.snap:
             self._install_snap()
