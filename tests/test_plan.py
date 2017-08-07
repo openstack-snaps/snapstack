@@ -26,7 +26,11 @@ class TestPlan(unittest.TestCase):
         faux_p.stdout.decode.return_value = 'foo\nbar'
 
         env = dict(os.environ)
-        env.update({'BASE_DIR': plan.tempdir})
+        env['BASE_DIR'] = plan.tempdir
+        if plan._http_proxy is not None:
+            env['SNAPSTACK_HTTP_PROXY'] = plan._http_proxy
+        if plan._https_proxy is not None:
+            env['SNAPSTACK_HTTPS_PROXY'] = plan._https_proxy
 
         mock_subprocess.run.return_value = faux_p
         mock_subprocess_plan.run.return_value = faux_p

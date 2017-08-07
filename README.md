@@ -39,15 +39,7 @@ Flags and Other Notes
 ---------------------
 
 If you are in a network restricted environment, and need to go through
-a proxy to build a snap, set SNAP_BUILD_PROXY in your terminal
-environment. This will set HTTP/S_PROXY for just the snap build, which
-is useful, as simply setting HTTP_PROXY and HTTPS_PROXY may interfere
-with some of the snap tests.
-
-Note that you may use one string for both http and https proxy, and
-you may omit the protocol (http/s://) part of the url; snapstack will
-fix the url up before using it.
-
-If you wish to reference this proxy in a script, reference
-OPT_HTTP_PROXY, and OPT_HTTPS_PROXY, for http and https proxies,
-respectively.
+a proxy to make HTTP requests, set SNAPSTACK_HTTPS_PROXY and
+SNAPSTACK_HTTP_PROXY in your terminal environment. This will set
+HTTP/S_PROXY for the snap build steps, and give you an environment
+variable that you can reference in your scripts.
