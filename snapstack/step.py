@@ -99,7 +99,7 @@ class Step:
             if self._http_proxy is not None:
                 env['HTTP_PROXY'] = self._http_proxy
             if self._https_proxy is not None:
-                env['HTTPS_PROXY'] = self._http_proxy
+                env['HTTPS_PROXY'] = self._https_proxy
 
             subprocess.run(["snapcraft", "clean"], env=env, check=True)
             subprocess.run(["snapcraft"], env=env, check=True)
