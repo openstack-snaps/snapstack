@@ -1,0 +1,12 @@
+#!/bin/bash
+#
+# snap-destroy
+#
+# Utility script that removes an openstack created by snap-deploy.
+
+
+tox --notest -e full
+
+source .tox/full/bin/activate
+
+python3 -c "from snapstack import Plan; Plan().destroy()"

@@ -46,26 +46,42 @@ class Plan:
         self._http_proxy = os.environ.get('SNAPSTACK_HTTP_PROXY')
         self._https_proxy = os.environ.get('SNAPSTACK_HTTPS_PROXY')
 
+    def deploy(self):
+        '''
+        Deploy the snaps in our plan, and run any auxillary scripts.
+
+        '''
+        for step in self._base_setup + self._tests:
+            step.run(
+                tempdir=self._tempdir,
+                http_proxy=self._http_proxy,
+                https_proxy=self._https_proxy)
+
+    def destroy(self):
+        '''
+        Remove any snaps that we have installed, and run any cleanup
+        scripts that we have specified.
+
+        '''
+
+        for step in self._base_setup + self._tests:
+            if not step.snap:
+                continue
+            subprocess.run(['sudo', 'snap', 'remove', step.snap])
+
+        for step in self._test_cleanup:
+            step.run(tempdir=self._tempdir)
+
+        for step in self._base_cleanup:
+            step.run(tempdir=self._tempdir)
+
     def run(self, cleanup=True):
         '''
         Execute all of our steps. Cleanup may be skipped.
 
         '''
         try:
-            for step in self._base_setup + self._tests:
-                step.run(
-                    tempdir=self._tempdir,
-                    http_proxy=self._http_proxy,
-                    https_proxy=self._https_proxy)
+            self.deploy()
         finally:
             if cleanup:
-                for step in self._base_setup + self._tests:
-                    if not step.snap:
-                        continue
-                    subprocess.run(['sudo', 'snap', 'remove', step.snap])
-
-                for step in self._test_cleanup:
-                    step.run(tempdir=self._tempdir)
-
-                for step in self._base_cleanup:
-                    step.run(tempdir=self._tempdir)
+                self.destroy()
