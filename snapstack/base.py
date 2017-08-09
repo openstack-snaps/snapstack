@@ -42,7 +42,7 @@ class Setup(Base):
     def __init__(self):
         super(Setup, self).__init__()
         self._steps['confs'] = Step(
-            script_loc='{snap-test}',
+            script_loc='{snapstack}',
             files=CONF_FILES
         )
         self._steps['packages'] = Step(
@@ -50,37 +50,37 @@ class Setup(Base):
             scripts=['packages.sh']
         )
         self._steps['rabbit_and_db'] = Step(
-            script_loc='{snap-test}',
-            scripts=['scripts/rabbitmq.sh', 'scripts/database.sh']
+            script_loc='{snapstack}',
+            scripts=['rabbitmq.sh', 'database.sh']
         )
         self._steps['keystone'] = Step(
             snap='keystone',
-            script_loc='{snap-test}',
-            scripts=['scripts/keystone.sh']
+            script_loc='{openstack}/snap-{snap}/master/',
+            scripts=['tests/keystone.sh']
         )
         self._steps['nova'] = Step(
             snap='nova',
-            script_loc='{snap-test}',
-            scripts=['scripts/nova.sh']
+            script_loc='{openstack}/snap-{snap}/master/',
+            scripts=['tests/nova.sh']
         )
         self._steps['neutron'] = Step(
             snap='neutron',
-            script_loc='{snap-test}',
-            scripts=['scripts/neutron.sh'],
+            script_loc='{openstack}/snap-{snap}/master/',
+            scripts=['tests/neutron.sh'],
         )
         self._steps['glance'] = Step(
             snap='glance',
-            script_loc='{snap-test}',
-            scripts=['scripts/glance.sh']
+            script_loc='{openstack}/snap-{snap}/master/',
+            scripts=['tests/glance.sh']
         )
         self._steps['nova_hypervisor'] = Step(
             snap='nova-hypervisor',
-            script_loc='{snap-test}',
-            scripts=['scripts/nova-hypervisor.sh']
+            script_loc='{openstack}/snap-{snap}/master/',
+            scripts=['tests/nova-hypervisor.sh']
         )
         self._steps['neutron_ext_net'] = Step(
-            script_loc='{snap-test}',
-            scripts=['scripts/neutron-ext-net.sh']
+            script_loc='{snapstack}',
+            scripts=['neutron-ext-net.sh']
         )
 
 
