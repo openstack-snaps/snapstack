@@ -41,11 +41,13 @@ class TestPlan(unittest.TestCase):
             os.path.exists(os.sep.join([plan.tempdir, 'admin-openrc'])))
 
         mock_subprocess.run.assert_called_with(
-            [os.sep.join([plan.tempdir, 'scripts/neutron-ext-net.sh'])],
+            [os.sep.join([plan.tempdir, 'neutron-ext-net.sh'])],
             env=env)
 
         plan.run()  # Run plan again with cleanup
-        mock_subprocess.run.assert_called_with(['sql_cleanup.py'], env=env)
+        mock_subprocess.run.assert_called_with(
+            [os.sep.join([plan.tempdir, 'sql_cleanup.py'])],
+            env=env)
 
     @unittest.skipUnless(
         os.environ.get('SNAPSTACK_TEST_INSTALL'),

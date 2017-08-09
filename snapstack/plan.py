@@ -58,16 +58,14 @@ class Plan:
                     http_proxy=self._http_proxy,
                     https_proxy=self._https_proxy)
         finally:
-            if not cleanup:
-                return
+            if cleanup:
+                for step in self._base_setup + self._tests:
+                    if not step.snap:
+                        continue
+                    subprocess.run(['sudo', 'snap', 'remove', step.snap])
 
-            for step in self._base_setup + self._tests:
-                if not step.snap:
-                    continue
-                subprocess.run(['sudo', 'snap', 'remove', step.snap])
+                for step in self._test_cleanup:
+                    step.run(tempdir=self._tempdir)
 
-            for step in self._test_cleanup:
-                step.run(tempdir=self._tempdir)
-
-            for step in self._base_cleanup:
-                step.run(tempdir=self._tempdir)
+                for step in self._base_cleanup:
+                    step.run(tempdir=self._tempdir)

@@ -6,6 +6,7 @@ Define an individual step in a Plan.
 import logging
 import os
 import requests
+import shutil
 import stat
 import subprocess
 import tempfile
@@ -72,22 +73,23 @@ class Step:
 
         '''
         path_ = ''.join([parent, rel_path])
+        working_path = os.sep.join([self.tempdir, rel_path])
+        d = os.path.dirname(working_path)
+        if not os.path.exists(d):
+            os.makedirs(d)
+
         if path_.startswith('https://'):
             # Download remote file and write to disk.
             remote = requests.get(path_)
             remote.raise_for_status()
-            new_path = os.sep.join([self.tempdir, rel_path])
 
-            d = os.path.dirname(new_path)
-            if not os.path.exists(d):
-                os.makedirs(d)
-
-            with open(new_path, 'w') as f:
+            with open(working_path, 'w') as f:
                 f.write(remote.text)
-            os.chmod(new_path, os.stat(new_path).st_mode | stat.S_IEXEC)
 
-            path_ = new_path
-        return path_
+        else:
+            shutil.copyfile(path_, working_path)
+
+        return working_path
 
     def _install_snap(self):
         '''
@@ -176,6 +178,7 @@ class Step:
 
         for script in self._scripts:
             script = self._fetch(location, script)
+            os.chmod(script, os.stat(script).st_mode | stat.S_IEXEC)
             p = subprocess.run([script], env=env)
             if p.returncode > 0:
                 raise TestFailure(
