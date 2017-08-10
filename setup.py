@@ -1,20 +1,19 @@
 import os
-from glob import glob
 from setuptools import setup, find_packages
 
 this_dir = os.path.abspath(os.path.dirname(__file__))
 reqs_file = os.path.join(this_dir, 'requirements.txt')
-scripts = glob('snapstack/scripts/*.sh') + glob('snapstack/scripts/*.py')
-scripts += ['snapstack/scripts/admin-openrc']
+scripts = ['snap-deploy', 'snap-destroy']
 
 
-def config_files():
+def snap_scripts():
     '''
-    Grab all the snap configuration files we've stuffed in etc.
+    Grab all the snap scripts and configuration files we've stuffed in
+    scripts.
 
     '''
     file_list = []
-    for dir_, _, files in os.walk('snapstack/scripts/etc'):
+    for dir_, _, files in os.walk('snapstack/scripts/'):
         if not files:
             continue
         file_list += [os.sep.join([dir_, file_])[10:] for file_ in files]
@@ -39,7 +38,7 @@ SETUP = {
     'long_description': open('README.md').read(),
     'install_requires': reqs,
     'scripts': scripts,
-    'package_data': {'snapstack': config_files()}
+    'package_data': {'snapstack': snap_scripts()}
 }
 
 if __name__ == '__main__':
