@@ -49,6 +49,7 @@ class ExampleTest(unittest.TestCase):
                                     # part of our source.
             scripts=['somesnap.sh'],
             files=[],
+            snap_store=False
         )
         setup.add_steps(('somesnap', somesnap))
 
