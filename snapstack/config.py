@@ -13,7 +13,7 @@ CONF_FILES = [
     'etc/snap-nova-hypervisor/nova/nova.conf.d/keystone.conf',
     'etc/snap-nova-hypervisor/nova/nova.conf.d/rabbitmq.conf',
     'etc/snap-nova-hypervisor/nova/nova.conf.d/neutron.conf',
-    'etc/snap-nova-hypervisor/neutron/plugins/ml2/''openvswitch_agent.ini',
+    'etc/snap-nova-hypervisor/neutron/plugins/ml2/openvswitch_agent.ini',
     'etc/snap-nova-hypervisor/neutron/metadata_agent.ini',
     'etc/snap-neutron/neutron/neutron.conf.d/database.conf',
     'etc/snap-neutron/neutron/neutron.conf.d/nova.conf',
