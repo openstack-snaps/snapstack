@@ -46,7 +46,7 @@ class TestPlan(unittest.TestCase):
 
         plan.run()  # Run plan again with cleanup
         mock_subprocess.run.assert_called_with(
-            [os.sep.join([plan.tempdir, 'sql_cleanup.py'])],
+            [os.sep.join([plan.tempdir, 'cleanup.py'])],
             env=env)
 
     @unittest.skipUnless(

@@ -1,6 +1,5 @@
 from collections import OrderedDict
 
-from snapstack.config import CONF_FILES
 from snapstack.step import Step
 
 
@@ -41,75 +40,68 @@ class Base:
 class Setup(Base):
     def __init__(self):
         super(Setup, self).__init__()
-        self._steps['confs'] = Step(
+        self._steps['snapstack_setup'] = Step(
             script_loc='{snapstack}',
-            files=CONF_FILES
-        )
-        self._steps['packages'] = Step(
-            script_loc='{snapstack}',
-            scripts=['packages.sh']
-        )
-        self._steps['rabbit_and_db'] = Step(
-            script_loc='{snapstack}',
-            scripts=['rabbitmq.sh', 'database.sh']
+            scripts=['packages.sh', 'rabbitmq.sh'],
+            files=['admin-openrc']
         )
         self._steps['keystone'] = Step(
             snap='keystone',
-            script_loc='{openstack}/snap-{snap}/master/',
-            scripts=['tests/keystone.sh'],
+            script_loc='{openstack}/snap-{snap}/master/tests/',
+            scripts=['keystone.sh'],
             files=[
-                ('tests/etc/snap-keystone/keystone/keystone.conf.d/'
+                ('etc/snap-keystone/keystone/keystone.conf.d/'
                  'database.conf')
             ]
         )
         self._steps['nova'] = Step(
             snap='nova',
-            script_loc='{openstack}/snap-{snap}/master/',
-            scripts=['tests/nova.sh'],
+            script_loc='{openstack}/snap-{snap}/master/tests/',
+            scripts=['nova.sh'],
             files=[
-                'tests/etc/snap-nova/nova/nova.conf.d/nova-placement.conf',
-                'tests/etc/snap-nova/nova/nova.conf.d/scheduler.conf',
-                'tests/etc/snap-nova/nova/nova.conf.d/database.conf',
-                'tests/etc/snap-nova/nova/nova.conf.d/keystone.conf',
-                'tests/etc/snap-nova/nova/nova.conf.d/rabbitmq.conf',
-                'tests/etc/snap-nova/nova/nova.conf.d/neutron.conf',
+                'etc/snap-nova/nova/nova.conf.d/nova-placement.conf',
+                'etc/snap-nova/nova/nova.conf.d/scheduler.conf',
+                'etc/snap-nova/nova/nova.conf.d/database.conf',
+                'etc/snap-nova/nova/nova.conf.d/keystone.conf',
+                'etc/snap-nova/nova/nova.conf.d/rabbitmq.conf',
+                'etc/snap-nova/nova/nova.conf.d/neutron.conf',
             ]
         )
         self._steps['neutron'] = Step(
             snap='neutron',
-            script_loc='{openstack}/snap-{snap}/master/',
-            scripts=['tests/neutron.sh'],
+            script_loc='{openstack}/snap-{snap}/master/tests/',
+            scripts=['neutron.sh'],
             files=[
-                'tests/etc/snap-neutron/neutron/neutron.conf.d/database.conf',
-                'tests/etc/snap-neutron/neutron/neutron.conf.d/nova.conf',
-                'tests/etc/snap-neutron/neutron/neutron.conf.d/keystone.conf',
+                'etc/snap-neutron/neutron/neutron.conf.d/database.conf',
+                'etc/snap-neutron/neutron/neutron.conf.d/nova.conf',
+                'etc/snap-neutron/neutron/neutron.conf.d/keystone.conf',
             ]
         )
         self._steps['glance'] = Step(
             snap='glance',
-            script_loc='{openstack}/snap-{snap}/master/',
-            scripts=['tests/glance.sh'],
+            script_loc='{openstack}/snap-{snap}/master/tests/',
+            scripts=['glance.sh'],
             files=[
-                'tests/etc/snap-glance/glance/glance.conf.d/database.conf',
-                'tests/etc/snap-glance/glance/glance.conf.d/keystone.conf'
+                'etc/snap-glance/glance/glance.conf.d/database.conf',
+                'etc/snap-glance/glance/glance.conf.d/keystone.conf'
             ]
         )
         self._steps['nova_hypervisor'] = Step(
             snap='nova-hypervisor',
-            script_loc='{openstack}/snap-{snap}/master/',
-            scripts=['tests/nova-hypervisor.sh'],
+            script_loc='{openstack}/snap-{snap}/master/tests/',
+            scripts=['nova-hypervisor.sh'],
             files=[
-                'tests/etc/snap-nova-hypervisor/nova/nova.conf.d/glance.conf',
-                ('tests/etc/snap-nova-hypervisor/nova/nova.conf.d/'
+                'etc/snap-nova-hypervisor/nova/nova.conf.d/glance.conf',
+                ('etc/snap-nova-hypervisor/nova/nova.conf.d/'
                  'nova-placement.conf'),
-                ('tests/etc/snap-nova-hypervisor/nova/nova.conf.d/'
+                ('etc/snap-nova-hypervisor/nova/nova.conf.d/'
                  'keystone.conf'),
-                ('tests/etc/snap-nova-hypervisor/nova/nova.conf.d/'
+                ('etc/snap-nova-hypervisor/nova/nova.conf.d/'
                  'rabbitmq.conf'),
-                'tests/etc/snap-nova-hypervisor/nova/nova.conf.d/neutron.conf',
-                ('tests/etc/snap-nova-hypervisor/neutron/plugins/ml2/'
+                'etc/snap-nova-hypervisor/nova/nova.conf.d/neutron.conf',
+                ('etc/snap-nova-hypervisor/neutron/plugins/ml2/'
                  'openvswitch_agent.ini'),
-                'tests/etc/snap-nova-hypervisor/neutron/metadata_agent.ini',
+                'etc/snap-nova-hypervisor/neutron/metadata_agent.ini',
             ]
         )
         self._steps['neutron_ext_net'] = Step(
@@ -121,7 +113,7 @@ class Setup(Base):
 class Cleanup(Base):
     def __init__(self):
         super(Cleanup, self).__init__()
-        self._steps['sql_cleanup'] = Step(
+        self._steps['snapstack_cleanup'] = Step(
             script_loc='{snapstack}',
-            scripts=['sql_cleanup.py']
+            scripts=['cleanup.py']
         )
