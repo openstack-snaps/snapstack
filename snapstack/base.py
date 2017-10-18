@@ -65,6 +65,7 @@ class Setup(Base):
                 'etc/snap-nova/nova/nova.conf.d/keystone.conf',
                 'etc/snap-nova/nova/nova.conf.d/rabbitmq.conf',
                 'etc/snap-nova/nova/nova.conf.d/neutron.conf',
+                'etc/snap-nova/nova/nova.conf.d/glance.conf',
             ]
         )
         self._steps['neutron'] = Step(
