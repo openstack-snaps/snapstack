@@ -59,21 +59,21 @@ class Plan:
 
     def destroy(self):
         '''
-        Remove any snaps that we have installed, and run any cleanup
-        scripts that we have specified.
+        Run any cleanup scripts that we have specified and remove any
+        snaps that we have installed.
 
         '''
-
-        for step in self._base_setup + self._tests:
-            if not step.snap:
-                continue
-            subprocess.run(['sudo', 'snap', 'remove', step.snap])
 
         for step in self._test_cleanup:
             step.run(tempdir=self._tempdir)
 
         for step in self._base_cleanup:
             step.run(tempdir=self._tempdir)
+
+        for step in self._base_setup + self._tests:
+            if not step.snap:
+                continue
+            subprocess.run(['sudo', 'snap', 'remove', step.snap])
 
     def run(self, cleanup=True):
         '''
