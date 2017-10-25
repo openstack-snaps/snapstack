@@ -45,9 +45,13 @@ class TestPlan(unittest.TestCase):
             env=env)
 
         plan.run()  # Run plan again with cleanup
-        mock_subprocess.run.assert_called_with(
-            [os.sep.join([plan.tempdir, 'cleanup.py'])],
-            env=env)
+        scripts = ['keystone_cleanup.sh', 'nova_cleanup.sh',
+                   'neutron_cleanup.sh', 'glance_cleanup.sh',
+                   'nova-hypervisor_cleanup.sh']
+        for script in scripts:
+            mock_subprocess.run.assert_any_call(
+                [os.sep.join([plan.tempdir, script])],
+                env=env)
 
     @unittest.skipUnless(
         os.environ.get('SNAPSTACK_TEST_INSTALL'),

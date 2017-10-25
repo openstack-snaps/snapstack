@@ -29,7 +29,7 @@ class Base:
 
     def remove_steps(self, *steps):
         '''
-        Each arg should be a stirng naming a step. We'll remove the named
+        Each arg should be a string naming a step. We'll remove the named
         step from our map of steps.
 
         '''
@@ -117,4 +117,24 @@ class Cleanup(Base):
         self._steps['snapstack_cleanup'] = Step(
             script_loc='{snapstack}',
             scripts=['cleanup.py']
+        )
+        self._steps['keystone'] = Step(
+            script_loc='{openstack}/snap-keystone/master/tests/',
+            scripts=['keystone_cleanup.sh'],
+        )
+        self._steps['nova'] = Step(
+            script_loc='{openstack}/snap-nova/master/tests/',
+            scripts=['nova_cleanup.sh'],
+        )
+        self._steps['neutron'] = Step(
+            script_loc='{openstack}/snap-neutron/master/tests/',
+            scripts=['neutron_cleanup.sh'],
+        )
+        self._steps['glance'] = Step(
+            script_loc='{openstack}/snap-glance/master/tests/',
+            scripts=['glance_cleanup.sh'],
+        )
+        self._steps['nova_hypervisor'] = Step(
+            script_loc='{openstack}/snap-nova-hypervisor/master/tests/',
+            scripts=['nova-hypervisor_cleanup.sh'],
         )
